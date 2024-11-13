@@ -10,6 +10,7 @@ const config: Pick<Config, "presets" | "theme"> = {
 			fontFamily: {
 				sans: ["var(--font-geist-sans)", "sans-serif"],
 				mono: ["var(--font-geist-mono)", "monospace"],
+				poppins: ["var(--font-poppins)", "sans-serif"],
 			},
 		},
 	},

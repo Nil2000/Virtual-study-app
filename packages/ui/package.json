@@ -6,7 +6,9 @@
 		"./components/*": "./src/components/ui/*.tsx",
 		"./tailwind.config": "./tailwind.config.ts",
 		"./postcss.config": "./postcss.config.js",
-		"./globals.css": "./src/globals.css"
+		"./globals.css": "./src/globals.css",
+		"./index": "./src/index.ts",
+		"./utils": "./src/lib/utils.ts"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",
@@ -29,12 +31,22 @@
 		"typescript": "5.5.4"
 	},
 	"dependencies": {
+		"@hookform/resolvers": "^3.9.1",
+		"@radix-ui/react-dialog": "^1.1.2",
+		"@radix-ui/react-label": "^2.1.0",
+		"@radix-ui/react-separator": "^1.1.0",
 		"@radix-ui/react-slot": "^1.1.0",
+		"@radix-ui/react-tooltip": "^1.1.4",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
+		"framer-motion": "^11.11.11",
 		"lucide-react": "^0.454.0",
+		"next-themes": "^0.4.3",
 		"react": "^18.2.0",
+		"react-hook-form": "^7.53.2",
+		"react-use-measure": "^2.1.1",
 		"tailwind-merge": "^2.5.4",
-		"tailwindcss-animate": "^1.0.7"
+		"tailwindcss-animate": "^1.0.7",
+		"zod": "^3.23.8"
 	}
 }
