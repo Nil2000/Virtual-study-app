@@ -19,16 +19,17 @@ enum Role {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  password      String?
-  role          Role      @default(STUDENT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String    @unique
+  emailVerified       DateTime?
+  image               String?
+  accounts            Account[]
+  password            String?
+  role                Role      @default(STUDENT)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  spotifyRefreshToken String?
 }
 
 model Account {

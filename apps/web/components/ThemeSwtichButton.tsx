@@ -2,10 +2,19 @@
 import { Button } from "@repo/ui/components/button";
 import { useTheme } from "@repo/ui/index";
 import { Moon, Sun } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export default function ThemeSwtichButton() {
 	const { theme, setTheme } = useTheme();
+	const [mounted, setMounted] = useState(false);
+
+	// Ensure component only accesses theme after mounting
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	// Render null if not yet mounted to avoid hydration mismatch
+	if (!mounted) return null;
 	return (
 		<Button
 			variant="ghost"
