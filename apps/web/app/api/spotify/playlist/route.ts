@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
 
   const playlistId = req.nextUrl.searchParams.get("playlistId");
-
+  console.log(playlistId)
   if (!playlistId) {
     return NextResponse.json({ message: "Playlist ID is required" }, { status: 400 });
   }
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   //   })
 
   const accessToken = await getSpotifyToken();
-
+  console.log("SPOTIFY_PLAYLIST_ROUTE")
   console.log(accessToken);
 
   if (!accessToken) {
@@ -39,6 +39,8 @@ export async function GET(req: NextRequest) {
     console.error(err);
     return NextResponse.json({ message: "Failed to get playlist" }, { status: 500 });
   })
+
+  console.log(playlist)
 
   const processedTracks = playlist.tracks.items.map((item: any) => {
     return {

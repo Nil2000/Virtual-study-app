@@ -48,12 +48,12 @@ const items = [
 	},
 	{
 		title: "Video session",
-		url: "#",
+		url: "/video",
 		icon: Video,
 	},
 	{
 		title: "Feedback",
-		url: "#",
+		url: "/feedback",
 		icon: Send,
 	},
 ];
