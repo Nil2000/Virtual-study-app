@@ -18,6 +18,11 @@ enum Role {
   TEACHER
 }
 
+enum RoomParticipantRole {
+  HOST
+  PARTICIPANT
+}
+
 model User {
   id                  String    @id @default(cuid())
   name                String?
@@ -30,6 +35,9 @@ model User {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   spotifyRefreshToken String?
+
+  rooms            Room[]
+  roomParticipants RoomParticipant[]
 }
 
 model Account {
@@ -71,4 +79,57 @@ model PasswordResetToken {
 
   @@unique([email, token])
   @@map("password_reset_tokens")
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  name      String
+  isPrivate Boolean  @default(false)
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  participants       RoomParticipant[]
+  chats              Chat[]
+  roomSessionHistory RoomSessionHistory[]
+
+  owner User @relation(fields: [ownerId], references: [id])
+}
+
+model RoomParticipant {
+  id       String              @id @default(cuid())
+  joinedAt DateTime            @default(now())
+  leftAt   DateTime?
+  role     RoomParticipantRole
+  roomId   String
+  userId   String
+  name     String?
+
+  room Room @relation(fields: [roomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  message   String
+  senderId  String
+  roomId    String
+  createdAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id])
+}
+
+model RoomSessionHistory {
+  id       String @id @default(cuid())
+  roomId   String
+  userId   String
+  duration Int    @default(0)
+
+  room Room @relation(fields: [roomId], references: [id])
+}
+
+model PomodoroSession {
+  id        String   @id @default(cuid())
+  userId    String
+  duration  Int
+  createdAt DateTime @default(now())
 }
