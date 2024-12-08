@@ -280,32 +280,6 @@ export default function PomodoroComponent({
 		}
 	};
 
-	// const authorizeSpotifyForFisrtTime = async () => {
-	// 	const generateRandomString = (length:number) => {
-	// 		const possible =
-	// 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	// 		const values = crypto.getRandomValues(new Uint8Array(length));
-	// 		return values.reduce((acc, x) => acc + possible[x % possible.length], "");
-	// 	};
-
-	// 	async function generateCodeChallenge(
-	// 		codeVerifier: string
-	// 	): Promise<string> {
-	// 		const data = new TextEncoder().encode(codeVerifier);
-	// 		const digest = await crypto.subtle.digest("SHA-256", data);
-	// 		return btoa(String.fromCharCode(...new Uint8Array(digest)))
-	// 			.replace(/\+/g, "-")
-	// 			.replace(/\//g, "_")
-	// 			.replace(/=+$/, "");
-	// 	}
-
-	// 	const codeVerifier = generateRandomString(64);
-	// 	const codeChallenge = generateCodeChallenge(codeVerifier);
-
-	// 	localStorage.setItem("spotify_auth_state", state);
-
-	// }
-
 	useEffect(() => {
 		if (isActive && time > 0) {
 			interval = setInterval(() => {

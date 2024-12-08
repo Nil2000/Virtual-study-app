@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/.prisma/client/"
 }
 
 datasource db {
@@ -36,8 +37,11 @@ model User {
   updatedAt           DateTime  @updatedAt
   spotifyRefreshToken String?
 
-  rooms            Room[]
-  roomParticipants RoomParticipant[]
+  rooms                Room[]
+  roomParticipants     RoomParticipant[]
+  chats                Chat[]
+  roomSessionHistories RoomSessionHistory[]
+  pomodoroSessions     PomodoroSession[]
 }
 
 model Account {
@@ -82,11 +86,12 @@ model PasswordResetToken {
 }
 
 model Room {
-  id        String   @id @default(cuid())
-  name      String
-  isPrivate Boolean  @default(false)
-  ownerId   String
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  name            String
+  isPrivate       Boolean? @default(false)
+  ownerId         String
+  createdAt       DateTime @default(now())
+  maxParticipants Int?
 
   participants       RoomParticipant[]
   chats              Chat[]
@@ -98,7 +103,6 @@ model Room {
 model RoomParticipant {
   id       String              @id @default(cuid())
   joinedAt DateTime            @default(now())
-  leftAt   DateTime?
   role     RoomParticipantRole
   roomId   String
   userId   String
@@ -106,6 +110,8 @@ model RoomParticipant {
 
   room Room @relation(fields: [roomId], references: [id])
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
 }
 
 model Chat {
@@ -115,7 +121,8 @@ model Chat {
   roomId    String
   createdAt DateTime @default(now())
 
-  room Room @relation(fields: [roomId], references: [id])
+  room   Room @relation(fields: [roomId], references: [id])
+  sender User @relation(fields: [senderId], references: [id])
 }
 
 model RoomSessionHistory {
@@ -125,6 +132,9 @@ model RoomSessionHistory {
   duration Int    @default(0)
 
   room Room @relation(fields: [roomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
 }
 
 model PomodoroSession {
@@ -132,4 +142,6 @@ model PomodoroSession {
   userId    String
   duration  Int
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

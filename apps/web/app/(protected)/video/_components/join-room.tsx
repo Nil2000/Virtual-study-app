@@ -1,4 +1,5 @@
 "use client";
+import { joinRoom } from "@/actions/roomActions";
 import { JoinRoomSchema } from "@/schemas/room";
 import FormError from "@components/FormError";
 import FormSuccess from "@components/FormSuccess";
@@ -21,7 +22,9 @@ import {
 } from "@repo/ui/components/form";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
+import { toast } from "@repo/ui/index";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,6 +33,7 @@ export default function JoinRoomCard() {
 	const [error, setError] = React.useState<string | undefined>("");
 	const [success, setSuccess] = React.useState<string | undefined>("");
 	const [isPending, startTransition] = useTransition();
+	const router = useRouter();
 	const form = useForm<z.infer<typeof JoinRoomSchema>>({
 		defaultValues: {
 			roomId: "",
@@ -40,6 +44,16 @@ export default function JoinRoomCard() {
 
 	const onSubmit = (values: z.infer<typeof JoinRoomSchema>) => {
 		console.log(values);
+		startTransition(() => {
+			joinRoom(values, "PARTICIPANT").then((res) => {
+				if (res?.error) {
+					toast.error(res?.error);
+				} else {
+					toast.success("Joined room successfully");
+					router.push(`/video-session/${values.roomId}`);
+				}
+			});
+		});
 	};
 	return (
 		<Card>

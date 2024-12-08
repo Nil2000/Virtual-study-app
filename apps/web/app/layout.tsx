@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "@repo/ui/globals.css";
 import { ThemeProvider } from "@components/ThemeProvider";
 import { Poppins } from "next/font/google";
-
+import { Toaster } from "@repo/ui/components/sonner";
 const geistSans = localFont({
 	src: "./fonts/GeistVF.woff",
 	variable: "--font-geist-sans",
@@ -33,7 +33,10 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable}`}
 			>
-				<ThemeProvider>{children}</ThemeProvider>
+				<ThemeProvider>
+					{children}
+					<Toaster richColors />
+				</ThemeProvider>
 			</body>
 		</html>
 	);
