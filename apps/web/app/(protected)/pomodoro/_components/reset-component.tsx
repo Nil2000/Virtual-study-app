@@ -3,14 +3,14 @@ import { RotateCcw } from "lucide-react";
 import React from "react";
 
 export default function ResetButton({
-	resetTimer,
+  resetTimer,
 }: {
-	resetTimer: () => void;
+  resetTimer: () => void;
 }) {
-	return (
-		<Button onClick={resetTimer} variant="outline" className="w-24">
-			<RotateCcw className="h-4 w-4" />
-			Reset
-		</Button>
-	);
+  return (
+    <Button onClick={resetTimer} variant="outline">
+      <RotateCcw className="h-4 w-4" />
+      Reset
+    </Button>
+  );
 }

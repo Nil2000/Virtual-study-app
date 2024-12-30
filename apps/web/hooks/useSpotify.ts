@@ -31,8 +31,8 @@ export const useSpotify = () => {
   );
   const [currentPlaying, setCurrentPlaying] = React.useState<any>({});
   const [player, setPlayer] = React.useState<any>(null);
-  const [expired, setExpired] = React.useState<boolean>(false);
-  const router = useRouter();
+  const [muted, setMuted] = React.useState<boolean>(false);
+  const [vol, setVol] = React.useState<number>(50);
 
   const checkLoggedInOrNot = () => {
     if (accessToken && refreshToken) {
@@ -40,7 +40,7 @@ export const useSpotify = () => {
     }
   };
 
-  const generateSpotifyAuhtoURL = () => {
+  const generateSpotifyAuthURL = () => {
     const state = generateRandomString(16);
     return `https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID}&scope=${SPOTIFY_SCOPES}&redirect_uri=${process.env.NEXT_PUBLIC_SPOTIFY_API_REDIRECT_URI}&state=${state}`;
   };
@@ -107,9 +107,42 @@ export const useSpotify = () => {
   };
 
   const changeVolume = (volume: number) => {
+    setVol(volume);
+    setMuted(false);
     if (player) {
-      player.setVolume(volume).then(() => {
-        console.log("Volume changed to", volume);
+      player.setVolume(volume / 100);
+    }
+  };
+
+  const pause = () => {
+    if (player) {
+      player.pause();
+    }
+  };
+
+  const stop = () => {
+    if (player) {
+      player.pause();
+    }
+  };
+
+  const play = () => {
+    if (player) {
+      player.getCurrentState().then(async (state: any) => {
+        try {
+          const device_id = localStorage.getItem("spotify_device_id");
+          if (!accessToken || !device_id) {
+            return;
+          }
+          await axios.put("/api/spotify/play", {
+            playlist_id: currentPlaylistId,
+            access_token: accessToken,
+            device_id,
+          });
+          player.resume();
+        } catch (error) {
+          console.log("Error playing", error);
+        }
       });
     }
   };
@@ -153,6 +186,13 @@ export const useSpotify = () => {
     return false;
   };
 
+  const toggleMute = () => {
+    setMuted(!muted);
+    if (player) {
+      player.setVolume(muted ? vol / 100 : 0);
+    }
+  };
+
   React.useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
     if (isLoggedIn) {
@@ -183,9 +223,15 @@ export const useSpotify = () => {
 
   return {
     currentPlaying,
-    SpotifyLoggedIn: isLoggedIn,
     changeVolume,
-    handleChangePlaylist,
-    generateSpotifyAuhtoURL,
+    changePlaylist: handleChangePlaylist,
+    generateSpotifyAuthURL,
+    isLoggedIn,
+    play,
+    toggleMute,
+    muted,
+    pause,
+    stop,
+    currentPlaylistId,
   };
 };
