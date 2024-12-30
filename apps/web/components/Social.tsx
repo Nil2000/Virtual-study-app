@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@repo/ui/components/button";
+import { signIn } from "next-auth/react";
 import React from "react";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -11,7 +12,7 @@ export default function Social() {
 				size={"lg"}
 				className="w-full"
 				variant={"outline"}
-				onClick={() => {}}
+				onClick={() => signIn("google")}
 			>
 				<FcGoogle />
 			</Button>

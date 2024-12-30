@@ -2,7 +2,11 @@
  * List of public routes.
  * @type {string[]}
  */
-export const publicRoutes: string[] = ["/auth/verify-email"];
+export const publicRoutes: string[] = [
+  "/auth/verify-email",
+  "/video",
+  "/video-session/abc-123-def",
+];
 
 /**
  * List of authenticated routes.
@@ -10,7 +14,6 @@ export const publicRoutes: string[] = ["/auth/verify-email"];
  * @type {string[]}
  */
 export const authRoutes = [
-  "/",
   "/auth/signin",
   "/auth/signup",
   "/auth/error",

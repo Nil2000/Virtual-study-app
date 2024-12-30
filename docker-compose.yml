@@ -1,0 +1,44 @@
+version: '1.0'
+
+services:
+  redis_server:
+    image: redis:latest
+    container_name: redis_server
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes 
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=redis@123
+    restart: unless-stopped
+    networks:
+      - videochat_network
+
+  cassandra_server:
+    image: cassandra:latest
+    container_name: cassandra_server
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=videochat_cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_PASSWORD_AUTHENTICATOR=PasswordAuthenticator
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra@123
+    restart: unless-stopped
+    networks:
+      - videochat_network
+
+volumes:
+  redis_data:
+    driver: local
+  cassandra_data:
+    driver: local
+
+networks:
+  videochat_network:
+    driver: bridge
