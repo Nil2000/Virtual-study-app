@@ -9,6 +9,8 @@ import Link from "next/link";
 import React from "react";
 import { FaSpotify } from "react-icons/fa";
 import SongCard from "./song-card";
+import axios from "axios";
+import Script from "next/script";
 
 const dummySong = {
   id: "1",
@@ -29,6 +31,7 @@ interface SpotifyComponentProps {
   play: () => void;
   stop: () => void;
   start: () => void;
+  currentPlaylistId: string;
 }
 
 export default function SpotifyComponent({
@@ -42,25 +45,54 @@ export default function SpotifyComponent({
   play,
   stop,
   start,
+  currentPlaylistId,
 }: SpotifyComponentProps) {
+  const getPlayListDetails = async (playlistId: string) => {
+    if (!localStorage.getItem("spotify_access_token")) {
+      return;
+    }
+    try {
+      const res = await axios.post(`/api/spotify/playlist/`, {
+        playlistId,
+        access_token: localStorage.getItem("spotify_access_token"),
+      });
+      console.log(res.data);
+      changePlaylist(playlistId);
+    } catch (error) {
+      console.error("Error getting playlist details", error);
+    }
+  };
+
+  React.useEffect(() => {
+    if (currentPlaylistId) {
+      getPlayListDetails(currentPlaylistId);
+    }
+  }, [currentPlaylistId]);
+
   return (
     <div className="relative w-full h-full">
-      <div className="absolute w-full h-full bg-opacity-10 z-10 flex justify-center items-center">
-        <Link href={generateSpotifyAuthURL()}>
-          <Button>
-            <FaSpotify />
-            Connect Spotify
-          </Button>
-        </Link>
-      </div>
+      {!isLoggedIn && (
+        <div className="absolute w-full h-full bg-opacity-10 z-10 flex justify-center items-center">
+          <Link href={generateSpotifyAuthURL()}>
+            <Button>
+              <FaSpotify />
+              Connect Spotify
+            </Button>
+          </Link>
+        </div>
+      )}
+      {isLoggedIn && <Script src="https://sdk.scdn.co/spotify-player.js" />}
       <Card
-        className={`border shadow-md p-4 space-y-2 h-max ${isLoggedIn ? "" : "blur"}`}
+        className={`border shadow-md p-4 space-y-2 h-full ${isLoggedIn ? "" : "blur"}`}
       >
         <CardHeader className="text-3xl font-bold text-center">
-          Spotify
+          Currently Playing
         </CardHeader>
         <CardDescription className="flex justify-center">
-          <SongCard track={dummySong} />
+          <div className="flex flex-col gap-4">
+            {/* <SongCard track={currentPlaying} /> */}
+            <Button>Change Playlist</Button>
+          </div>
         </CardDescription>
         <CardFooter />
       </Card>

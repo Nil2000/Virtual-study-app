@@ -1,56 +1,58 @@
 import { getSpotifyToken } from "@lib/spotify-token";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
+  const { playlistId, access_token } = await req.json();
 
-  const playlistId = req.nextUrl.searchParams.get("playlistId");
-  console.log(playlistId)
+  // console.log(playlistId)
   if (!playlistId) {
-    return NextResponse.json({ message: "Playlist ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Playlist ID is required" },
+      { status: 400 }
+    );
   }
 
-  //retrieve token from Spotify API
-  // const token = await fetch("https://accounts.spotify.com/api/token", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/x-www-form-urlencoded",
-  //   },
-  //   body: 'grant_type=client_credentials&client_id=' + process.env.SPOTIFY_CLIENT_ID + '&client_secret=' + process.env.SPOTIFY_CLIENT_SECRET
-  // })
-  //   .then((res) => res.json()).catch((err) => {
-  //     console.error(err);
-  //     return NextResponse.json({ message: "Failed to get token" }, { status: 500 });
-  //   })
-
-  const accessToken = await getSpotifyToken();
-  console.log("SPOTIFY_PLAYLIST_ROUTE")
-  console.log(accessToken);
-
-  if (!accessToken) {
-    return NextResponse.json({ message: "Failed to get token" }, { status: 500 });
+  if (!access_token) {
+    return NextResponse.json(
+      { message: "Failed to get token" },
+      { status: 500 }
+    );
   }
 
-  //retrieve playlist from Spotify API using token
-  const playlist = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  }).then((res) => res.json()).catch((err) => {
-    console.error(err);
-    return NextResponse.json({ message: "Failed to get playlist" }, { status: 500 });
-  })
-
-  console.log(playlist)
-
-  const processedTracks = playlist.tracks.items.map((item: any) => {
-    return {
-      id: item.track.id,
-      name: item.track.name,
-      artists: item.track.artists.map((artist: any) => artist.name),
-      album: item.track.album.name,
-      duration_ms: item.track.duration_ms,
-    };
-  })
-
-  return NextResponse.json(processedTracks, { status: 200 });
+  // //retrieve playlist from Spotify API using token
+  try {
+    const res = await axios.get(
+      `https://api.spotify.com/v1/playlists/${playlistId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+    console.log(res.data.tracks.items);
+    const tracks = res.data.tracks.items.map((track: any) => {
+      return {
+        name: track.track.name,
+        artist: track.track.artists
+          .map((artist: any) => artist.name)
+          .join(", "),
+        id: track.track.id,
+        image: track.track.album.images[0].url,
+      };
+    });
+    return NextResponse.json(
+      {
+        playListName: res.data.name,
+        tracks: tracks,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error getting playlist", error);
+    return NextResponse.json(
+      { message: "Error getting playlist" },
+      { status: 500 }
+    );
+  }
 }

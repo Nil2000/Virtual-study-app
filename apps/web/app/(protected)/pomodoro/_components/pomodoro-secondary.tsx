@@ -19,6 +19,7 @@ interface PomodoroSecProps {
   stop: () => void;
   vol: number;
   toggleMute: () => void;
+  start: () => void;
 }
 
 export default function PomodoroSec({
@@ -29,6 +30,7 @@ export default function PomodoroSec({
   stop,
   vol,
   toggleMute,
+  start,
 }: PomodoroSecProps) {
   let intervalId: NodeJS.Timeout | null = null;
   const [isRunning, setIsRunning] = React.useState(false);
@@ -49,9 +51,7 @@ export default function PomodoroSec({
 
   const togglePlay = () => {
     setIsRunning(!isRunning);
-    if (!isRunning) {
-      play();
-    } else {
+    if (isRunning) {
       pause();
     }
   };
@@ -113,7 +113,7 @@ export default function PomodoroSec({
         }
         if (breakTimeEnd(time, workTime, breakTime)) {
           playAlarm();
-          play();
+          start();
         }
         setTime((prev) => prev - 1);
       }, 1000);

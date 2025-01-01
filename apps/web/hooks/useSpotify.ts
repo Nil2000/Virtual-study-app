@@ -29,7 +29,7 @@ export const useSpotify = () => {
   const [currentPlaylistId, setCurrentPlaylistId] = React.useState<string>(
     localStorage.getItem("spotify_playlist_id") || "3tkSZxR5KvwDalDKLPlMZW"
   );
-  const [currentPlaying, setCurrentPlaying] = React.useState<any>({});
+  const [currentPlaying, setCurrentPlaying] = React.useState<any | null>(null);
   const [player, setPlayer] = React.useState<any>(null);
   const [muted, setMuted] = React.useState<boolean>(false);
   const [vol, setVol] = React.useState<number>(50);
@@ -46,6 +46,7 @@ export const useSpotify = () => {
   };
 
   const setUpSpotify = async () => {
+    console.log("Setting up Spotify");
     if (!isLoggedIn) {
       console.log("Spotify not logged in");
       return;
@@ -82,6 +83,7 @@ export const useSpotify = () => {
       });
       spotifyPlayer.addListener("player_state_changed", (state: any) => {
         if (!state) {
+          setCurrentPlaying(null);
           return;
         }
         setCurrentPlaying(state.track_window.current_track);
@@ -133,13 +135,20 @@ export const useSpotify = () => {
   };
 
   const start = () => {
+    console.log(
+      currentPlaylistId,
+      accessToken,
+      localStorage.getItem("spotify_device_id")
+    );
     if (player) {
       player.getCurrentState().then(async (state: any) => {
+        console.log(state);
         try {
           const device_id = localStorage.getItem("spotify_device_id");
           if (!accessToken || !device_id) {
             return;
           }
+          console.log("Playing");
           await axios.put("/api/spotify/play", {
             playlist_id: currentPlaylistId,
             access_token: accessToken,

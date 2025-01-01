@@ -20,11 +20,11 @@ export default function PomodoroPage() {
     generateSpotifyAuthURL,
     muted,
     pause,
-    play,
     stop,
     toggleMute,
     currentPlaylistId,
     vol,
+    play,
     start,
   } = useSpotify();
 
@@ -34,10 +34,20 @@ export default function PomodoroPage() {
   // };
 
   return (
-    <div className="font-sans grid md:grid-cols-2 grid-cols-1 w-full xl:w-[1000px] gap-4 px-3 mx-auto">
+    <div className="font-sans grid md:grid-cols-2 md:grid-rows-1 grid-cols-1 w-full xl:w-[1000px] gap-4 px-3 mx-auto">
       {/* <PomodoroComponent playlistId={playlistId} playConfetti={playConfetti} />
       <Playlist setPlaylistId={setPlaylistId} /> */}
       {/* <Confetti ref={confettiRef} className="z-20" /> */}
+      <PomodoroSec
+        changeVolume={changeVolume}
+        muted={muted}
+        start={start}
+        pause={pause}
+        play={play}
+        stop={stop}
+        vol={vol}
+        toggleMute={toggleMute}
+      />
       <SpotifyComponent
         isLoggedIn={isLoggedIn}
         currentPlaying={currentPlaying}
@@ -46,18 +56,10 @@ export default function PomodoroPage() {
         generateSpotifyAuthURL={generateSpotifyAuthURL}
         muted={muted}
         pause={pause}
-        play={play}
         stop={stop}
         start={start}
-      />
-      <PomodoroSec
-        changeVolume={changeVolume}
-        muted={muted}
         play={play}
-        pause={pause}
-        stop={stop}
-        vol={vol}
-        toggleMute={toggleMute}
+        currentPlaylistId={currentPlaylistId}
       />
     </div>
   );
