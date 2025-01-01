@@ -4,7 +4,7 @@ import PomodoroComponent from "./pomodoro";
 import Playlist from "./playlist-component";
 import Confetti, { ConfettiRef } from "@repo/ui/components/confetti";
 import { useSpotify } from "@/hooks/useSpotify";
-import SpotifyComponet from "./spotify-component";
+import SpotifyComponent from "./spotify-component";
 import PomodoroSec from "./pomodoro-secondary";
 
 export default function PomodoroPage() {
@@ -24,6 +24,8 @@ export default function PomodoroPage() {
     stop,
     toggleMute,
     currentPlaylistId,
+    vol,
+    start,
   } = useSpotify();
 
   const confettiRef = React.useRef<ConfettiRef>(null);
@@ -32,11 +34,11 @@ export default function PomodoroPage() {
   // };
 
   return (
-    <div className="font-sans grid md:grid-cols-2 grid-cols-1 w-full gap-4 px-3">
+    <div className="font-sans grid md:grid-cols-2 grid-cols-1 w-full xl:w-[1000px] gap-4 px-3 mx-auto">
       {/* <PomodoroComponent playlistId={playlistId} playConfetti={playConfetti} />
       <Playlist setPlaylistId={setPlaylistId} /> */}
       {/* <Confetti ref={confettiRef} className="z-20" /> */}
-      <SpotifyComponet
+      <SpotifyComponent
         isLoggedIn={isLoggedIn}
         currentPlaying={currentPlaying}
         changeVolume={changeVolume}
@@ -46,8 +48,17 @@ export default function PomodoroPage() {
         pause={pause}
         play={play}
         stop={stop}
+        start={start}
       />
-      <PomodoroSec />
+      <PomodoroSec
+        changeVolume={changeVolume}
+        muted={muted}
+        play={play}
+        pause={pause}
+        stop={stop}
+        vol={vol}
+        toggleMute={toggleMute}
+      />
     </div>
   );
 }

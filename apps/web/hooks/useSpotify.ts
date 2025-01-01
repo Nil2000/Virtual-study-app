@@ -128,6 +128,12 @@ export const useSpotify = () => {
 
   const play = () => {
     if (player) {
+      player.resume();
+    }
+  };
+
+  const start = () => {
+    if (player) {
       player.getCurrentState().then(async (state: any) => {
         try {
           const device_id = localStorage.getItem("spotify_device_id");
@@ -233,5 +239,7 @@ export const useSpotify = () => {
     pause,
     stop,
     currentPlaylistId,
+    vol,
+    start,
   };
 };

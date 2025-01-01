@@ -28,9 +28,10 @@ interface SpotifyComponentProps {
   pause: () => void;
   play: () => void;
   stop: () => void;
+  start: () => void;
 }
 
-export default function SpotifyComponet({
+export default function SpotifyComponent({
   isLoggedIn,
   currentPlaying,
   changeVolume,
@@ -40,6 +41,7 @@ export default function SpotifyComponet({
   pause,
   play,
   stop,
+  start,
 }: SpotifyComponentProps) {
   return (
     <div className="relative w-full h-full">
