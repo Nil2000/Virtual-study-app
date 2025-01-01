@@ -43,7 +43,6 @@ export default function PomodoroPage() {
         muted={muted}
         start={start}
         pause={pause}
-        play={play}
         stop={stop}
         vol={vol}
         toggleMute={toggleMute}
@@ -51,14 +50,8 @@ export default function PomodoroPage() {
       <SpotifyComponent
         isLoggedIn={isLoggedIn}
         currentPlaying={currentPlaying}
-        changeVolume={changeVolume}
         changePlaylist={changePlaylist}
         generateSpotifyAuthURL={generateSpotifyAuthURL}
-        muted={muted}
-        pause={pause}
-        stop={stop}
-        start={start}
-        play={play}
         currentPlaylistId={currentPlaylistId}
       />
     </div>

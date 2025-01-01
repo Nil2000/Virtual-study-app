@@ -23,30 +23,19 @@ const dummySong = {
 interface SpotifyComponentProps {
   isLoggedIn: boolean;
   currentPlaying: any;
-  changeVolume: any;
   changePlaylist: any;
   generateSpotifyAuthURL: () => string;
-  muted: boolean;
-  pause: () => void;
-  play: () => void;
-  stop: () => void;
-  start: () => void;
   currentPlaylistId: string;
 }
 
 export default function SpotifyComponent({
   isLoggedIn,
   currentPlaying,
-  changeVolume,
   changePlaylist,
   generateSpotifyAuthURL,
-  muted,
-  pause,
-  play,
-  stop,
-  start,
   currentPlaylistId,
 }: SpotifyComponentProps) {
+  const [playListName, setPlayListName] = React.useState<string | undefined>();
   const getPlayListDetails = async (playlistId: string) => {
     if (!localStorage.getItem("spotify_access_token")) {
       return;
@@ -57,6 +46,7 @@ export default function SpotifyComponent({
         access_token: localStorage.getItem("spotify_access_token"),
       });
       console.log(res.data);
+      setPlayListName(res.data.playListName);
       changePlaylist(playlistId);
     } catch (error) {
       console.error("Error getting playlist details", error);
@@ -90,7 +80,12 @@ export default function SpotifyComponent({
         </CardHeader>
         <CardDescription className="flex justify-center">
           <div className="flex flex-col gap-4">
-            {/* <SongCard track={currentPlaying} /> */}
+            {playListName && (
+              <h2 className="text-center text-foreground text-base">
+                From Playlist : {playListName}
+              </h2>
+            )}
+            <SongCard track={currentPlaying} />
             <Button>Change Playlist</Button>
           </div>
         </CardDescription>

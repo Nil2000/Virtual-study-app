@@ -96,16 +96,20 @@ export const useSpotify = () => {
   const handleChangePlaylist = async (playlistId: string) => {
     localStorage.setItem("spotify_playlist_id", playlistId);
     if (player) {
-      if (checkTokenExpiry()) {
-        await refreshSpotifyToken();
+      try {
+        if (checkTokenExpiry()) {
+          await refreshSpotifyToken();
+        }
+        await axios.put("/api/spotify/play", {
+          playlist_id: playlistId,
+          access_token: localStorage.getItem("spotify_access_token"),
+          device_id: localStorage.getItem("spotify_device_id"),
+        });
+        setCurrentPlaylistId(playlistId);
+      } catch (error) {
+        console.log("Error changing playlist", error);
       }
-      await axios.put("/api/spotify/play", {
-        playlist_id: playlistId,
-        access_token: accessToken,
-        device_id: localStorage.getItem("spotify_device_id"),
-      });
     }
-    setCurrentPlaylistId(playlistId);
   };
 
   const changeVolume = (volume: number) => {
@@ -142,18 +146,36 @@ export const useSpotify = () => {
     );
     if (player) {
       player.getCurrentState().then(async (state: any) => {
-        console.log(state);
         try {
           const device_id = localStorage.getItem("spotify_device_id");
           if (!accessToken || !device_id) {
             return;
           }
+
+          if (!state) {
+            await axios.put("/api/spotify/play", {
+              playlist_id: currentPlaylistId,
+              access_token: accessToken,
+              device_id,
+            });
+            player.resume();
+            return;
+          }
+          //If not playing, play
+          const { context } = state;
+
+          if (
+            !context ||
+            context.uri !== `spotify:playlist:${currentPlaylistId}`
+          ) {
+            await axios.put("/api/spotify/play", {
+              playlist_id: currentPlaylistId,
+              access_token: accessToken,
+              device_id,
+            });
+          }
+
           console.log("Playing");
-          await axios.put("/api/spotify/play", {
-            playlist_id: currentPlaylistId,
-            access_token: accessToken,
-            device_id,
-          });
           player.resume();
         } catch (error) {
           console.log("Error playing", error);

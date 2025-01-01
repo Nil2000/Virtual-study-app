@@ -4,4 +4,12 @@ module.exports = {
   experimental: {
     externalDir: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        hostname: "i.scdn.co",
+        protocol: "https",
+      },
+    ],
+  },
 };

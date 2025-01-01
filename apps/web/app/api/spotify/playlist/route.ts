@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // //retrieve playlist from Spotify API using token
+  //retrieve playlist from Spotify API using token
   try {
     const res = await axios.get(
       `https://api.spotify.com/v1/playlists/${playlistId}`,
@@ -30,7 +30,6 @@ export async function POST(req: NextRequest) {
         },
       }
     );
-    console.log(res.data.tracks.items);
     const tracks = res.data.tracks.items.map((track: any) => {
       return {
         name: track.track.name,

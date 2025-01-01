@@ -14,7 +14,6 @@ import SelectTime from "./select-time";
 interface PomodoroSecProps {
   changeVolume: any;
   muted: boolean;
-  play: () => void;
   pause: () => void;
   stop: () => void;
   vol: number;
@@ -25,7 +24,6 @@ interface PomodoroSecProps {
 export default function PomodoroSec({
   changeVolume,
   muted,
-  play,
   pause,
   stop,
   vol,
@@ -37,7 +35,6 @@ export default function PomodoroSec({
   const [time, setTime] = React.useState<number>(0);
   const [breakTime, setBreakTime] = React.useState<number>(0);
   const [workTime, setWorkTime] = React.useState<number>(0);
-  const [selectedTime, setSelectedTime] = React.useState<boolean>(false);
   const handleVolumeChange = (newVolume: number[]) => {
     changeVolume(newVolume[0]);
   };
@@ -106,7 +103,6 @@ export default function PomodoroSec({
   React.useEffect(() => {
     if (isRunning && time > 0) {
       intervalId = setInterval(() => {
-        console.log("Inside interval");
         if (breakTimeStart(time, workTime, breakTime)) {
           playAlarm();
           pause();
@@ -136,7 +132,7 @@ export default function PomodoroSec({
   }, []);
 
   return (
-    <Card>
+    <Card className="border shadow-md p-4 space-y-2 h-full">
       <CardHeader className="text-center font-bold text-3xl">Timer</CardHeader>
       <CardDescription className="flex flex-col gap-4 text-center">
         <h1 className="text-6xl font-mono">{formatTime(time)}</h1>
