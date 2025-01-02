@@ -27,7 +27,7 @@ export default function SongCard({ track }: { track: any }) {
   return (
     <Card
       className={cn(
-        "relative h-24 w-full lg:w-[400px] cursor-pointer overflow-hidden rounded-xl border px-4 flex space-x-2 items-center shadow-md",
+        "relative h-24 w-full lg:w-[300px] cursor-pointer overflow-hidden rounded-xl border px-4 flex space-x-2 items-center shadow-md",
         track ? "" : "justify-center"
       )}
     >

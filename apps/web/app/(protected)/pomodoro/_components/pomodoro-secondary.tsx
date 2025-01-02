@@ -10,6 +10,7 @@ import React from "react";
 import ResetButton from "./reset-component";
 import { Slider } from "@repo/ui/components/slider";
 import SelectTime from "./select-time";
+import { useConfettiStore } from "@/hooks/useConfettiStore";
 
 interface PomodoroSecProps {
   changeVolume: any;
@@ -19,6 +20,7 @@ interface PomodoroSecProps {
   vol: number;
   toggleMute: () => void;
   start: () => void;
+  confettiRef: React.RefObject<any>;
 }
 
 export default function PomodoroSec({
@@ -29,12 +31,14 @@ export default function PomodoroSec({
   vol,
   toggleMute,
   start,
+  confettiRef,
 }: PomodoroSecProps) {
   let intervalId: NodeJS.Timeout | null = null;
   const [isRunning, setIsRunning] = React.useState(false);
   const [time, setTime] = React.useState<number>(0);
   const [breakTime, setBreakTime] = React.useState<number>(0);
   const [workTime, setWorkTime] = React.useState<number>(0);
+  const confetti = useConfettiStore();
   const handleVolumeChange = (newVolume: number[]) => {
     changeVolume(newVolume[0]);
   };
@@ -99,6 +103,7 @@ export default function PomodoroSec({
     stop();
     // setSelectedTime(false);
     sessionCompleted();
+    confetti.onOpen();
     if (intervalId) clearInterval(intervalId);
   };
 
