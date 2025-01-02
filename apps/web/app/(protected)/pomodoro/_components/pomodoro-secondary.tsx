@@ -11,6 +11,7 @@ import ResetButton from "./reset-component";
 import { Slider } from "@repo/ui/components/slider";
 import SelectTime from "./select-time";
 import { useConfettiStore } from "@/hooks/useConfettiStore";
+import axios from "axios";
 
 interface PomodoroSecProps {
   changeVolume: any;
@@ -92,8 +93,12 @@ export default function PomodoroSec({
     audio.play();
   };
 
-  const sessionCompleted = () => {
+  const sessionCompleted = async () => {
     console.log("Session completed");
+    await axios.post("/api/pomodoro", {
+      createdTime: new Date().getTime(),
+      endTime: new Date(Date.now()),
+    });
   };
 
   const stopPomodoro = () => {
