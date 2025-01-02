@@ -28,15 +28,11 @@ export default function SongCard({ track }: { track: any }) {
     <Card
       className={cn(
         "relative h-24 w-full lg:w-[400px] cursor-pointer overflow-hidden rounded-xl border px-4 flex space-x-2 items-center shadow-md",
-        track ? " hover:bg-gray-100" : "justify-center"
+        track ? "" : "justify-center"
       )}
     >
       {track ? (
         <>
-          {/* <Music
-            className="h-4 w-4 flex-shrink-0 text-gray-500"
-            aria-hidden="true"
-          /> */}
           {track.album.images[0].url ? (
             <Image
               src={track.album.images[0].url}

@@ -50,6 +50,8 @@ export default function PomodoroSec({
     setIsRunning(!isRunning);
     if (isRunning) {
       pause();
+    } else {
+      start();
     }
   };
 

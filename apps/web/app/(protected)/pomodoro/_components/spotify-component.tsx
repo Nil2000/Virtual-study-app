@@ -9,23 +9,15 @@ import Link from "next/link";
 import React from "react";
 import { FaSpotify } from "react-icons/fa";
 import SongCard from "./song-card";
-import axios from "axios";
 import Script from "next/script";
-
-const dummySong = {
-  id: "1",
-  name: "Shape of You",
-  artists: ["Ed Sheeran"],
-  album: "÷ (Deluxe)",
-  duration_ms: 233713,
-};
+import ChangePlayListDialog from "./change-playlist-dialog";
 
 interface SpotifyComponentProps {
   isLoggedIn: boolean;
   currentPlaying: any;
   changePlaylist: any;
   generateSpotifyAuthURL: () => string;
-  currentPlaylistId: string;
+  playListInfo: any;
 }
 
 export default function SpotifyComponent({
@@ -33,32 +25,8 @@ export default function SpotifyComponent({
   currentPlaying,
   changePlaylist,
   generateSpotifyAuthURL,
-  currentPlaylistId,
+  playListInfo,
 }: SpotifyComponentProps) {
-  const [playListName, setPlayListName] = React.useState<string | undefined>();
-  const getPlayListDetails = async (playlistId: string) => {
-    if (!localStorage.getItem("spotify_access_token")) {
-      return;
-    }
-    try {
-      const res = await axios.post(`/api/spotify/playlist/`, {
-        playlistId,
-        access_token: localStorage.getItem("spotify_access_token"),
-      });
-      console.log(res.data);
-      setPlayListName(res.data.playListName);
-      changePlaylist(playlistId);
-    } catch (error) {
-      console.error("Error getting playlist details", error);
-    }
-  };
-
-  React.useEffect(() => {
-    if (currentPlaylistId) {
-      getPlayListDetails(currentPlaylistId);
-    }
-  }, [currentPlaylistId]);
-
   return (
     <div className="relative w-full h-full">
       {!isLoggedIn && (
@@ -80,13 +48,13 @@ export default function SpotifyComponent({
         </CardHeader>
         <CardDescription className="flex justify-center">
           <div className="flex flex-col gap-4">
-            {playListName && (
+            {playListInfo && (
               <h2 className="text-center text-foreground text-base">
-                From Playlist : {playListName}
+                Selected Playlist : {playListInfo.playListName}
               </h2>
             )}
             <SongCard track={currentPlaying} />
-            <Button>Change Playlist</Button>
+            <ChangePlayListDialog changePlayList={changePlaylist} />
           </div>
         </CardDescription>
         <CardFooter />

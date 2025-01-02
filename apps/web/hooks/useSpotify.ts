@@ -1,8 +1,14 @@
 "use client";
 import axios from "axios";
+import { access } from "fs";
 import { useRouter } from "next/navigation";
 import React from "react";
-
+declare global {
+  interface Window {
+    onSpotifyWebPlaybackSDKReady: () => void;
+    Spotify: any;
+  }
+}
 const SPOTIFY_SCOPES =
   "streaming user-read-email user-read-private playlist-read-private playlist-read-collaborative user-modify-playback-state";
 
@@ -33,6 +39,7 @@ export const useSpotify = () => {
   const [player, setPlayer] = React.useState<any>(null);
   const [muted, setMuted] = React.useState<boolean>(false);
   const [vol, setVol] = React.useState<number>(50);
+  const [playListInfo, setPlayListInfo] = React.useState<string | undefined>();
 
   const checkLoggedInOrNot = () => {
     if (accessToken && refreshToken) {
@@ -46,9 +53,9 @@ export const useSpotify = () => {
   };
 
   const setUpSpotify = async () => {
-    console.log("Setting up Spotify");
+    //console.log("Setting up Spotify");
     if (!isLoggedIn) {
-      console.log("Spotify not logged in");
+      //console.log("Spotify not logged in");
       return;
     }
 
@@ -74,12 +81,12 @@ export const useSpotify = () => {
       spotifyPlayer.addListener(
         "ready",
         ({ device_id }: { device_id: string }) => {
-          console.log("Ready with Device ID", device_id);
+          //console.log("Ready with Device ID", device_id);
           localStorage.setItem("spotify_device_id", device_id);
         }
       );
       spotifyPlayer.addListener("not_ready", ({ device_id }: any) => {
-        console.log("Device ID has gone offline", device_id);
+        //console.log("Device ID has gone offline", device_id);
       });
       spotifyPlayer.addListener("player_state_changed", (state: any) => {
         if (!state) {
@@ -93,18 +100,21 @@ export const useSpotify = () => {
     };
   };
 
-  const handleChangePlaylist = async (playlistId: string) => {
+  const handleChangePlaylist = async (playListUrl: string) => {
+    const playlistId = playListUrl.split("/").pop()?.split("?")[0];
+    if (!playlistId) return;
     localStorage.setItem("spotify_playlist_id", playlistId);
     if (player) {
       try {
-        if (checkTokenExpiry()) {
-          await refreshSpotifyToken();
-        }
-        await axios.put("/api/spotify/play", {
-          playlist_id: playlistId,
-          access_token: localStorage.getItem("spotify_access_token"),
-          device_id: localStorage.getItem("spotify_device_id"),
-        });
+        // if (checkTokenExpiry()) {
+        //   await refreshSpotifyToken();
+        // }
+        // await axios.put("/api/spotify/play", {
+        //   playlist_id: playlistId,
+        //   access_token: localStorage.getItem("spotify_access_token"),
+        //   device_id: localStorage.getItem("spotify_device_id"),
+        // });
+        getPlayListDetails(playlistId);
         setCurrentPlaylistId(playlistId);
       } catch (error) {
         console.log("Error changing playlist", error);
@@ -139,11 +149,11 @@ export const useSpotify = () => {
   };
 
   const start = () => {
-    console.log(
-      currentPlaylistId,
-      accessToken,
-      localStorage.getItem("spotify_device_id")
-    );
+    // //console.log(
+    //   currentPlaylistId,
+    //   accessToken,
+    //   localStorage.getItem("spotify_device_id")
+    // );
     if (player) {
       player.getCurrentState().then(async (state: any) => {
         try {
@@ -155,6 +165,10 @@ export const useSpotify = () => {
           if (!state) {
             await axios.put("/api/spotify/play", {
               playlist_id: currentPlaylistId,
+              access_token: accessToken,
+              device_id,
+            });
+            await axios.put("/api/spotify/repeat", {
               access_token: accessToken,
               device_id,
             });
@@ -173,20 +187,39 @@ export const useSpotify = () => {
               access_token: accessToken,
               device_id,
             });
+            await axios.put("/api/spotify/repeat", {
+              access_token: accessToken,
+              device_id,
+            });
           }
 
-          console.log("Playing");
+          //console.log("Playing");
           player.resume();
         } catch (error) {
-          console.log("Error playing", error);
+          console.error("Error playing", error);
         }
       });
     }
   };
 
+  const getPlayListDetails = async (playlistId: string) => {
+    if (!accessToken) return;
+
+    try {
+      const res = await axios.post(`/api/spotify/playlist/`, {
+        playlistId,
+        access_token: accessToken,
+      });
+      // //console.log(res.data);
+      setPlayListInfo(res.data);
+    } catch (error) {
+      console.error("Error getting playlist details", error);
+    }
+  };
+
   const refreshSpotifyToken = async () => {
     if (!refreshToken) {
-      console.log("No refresh token found");
+      //console.log("No refresh token found");
       return;
     }
 
@@ -235,6 +268,7 @@ export const useSpotify = () => {
     if (isLoggedIn) {
       refreshSpotifyToken();
       setUpSpotify();
+      getPlayListDetails(currentPlaylistId);
       intervalId = setInterval(
         () => {
           refreshSpotifyToken();
@@ -272,5 +306,6 @@ export const useSpotify = () => {
     currentPlaylistId,
     vol,
     start,
+    playListInfo,
   };
 };
