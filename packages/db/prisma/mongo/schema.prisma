@@ -18,11 +18,44 @@ enum messageType {
   FILE
 }
 
-model Chat {
+model User {
+  id          String     @id @default(cuid()) @map("_id")
+  userAuthId  String     @unique
+  avatarUrl   String
+  joinedRooms RoomUser[]
+}
+
+model RoomUser {
+  id       String    @id @default(cuid()) @map("_id")
+  userId   String
+  name     String
+  role     CallRole
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  messages Message[]
+  roomId   String
+
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+}
+
+model Room {
+  id        String     @id @default(cuid()) @map("_id")
+  name      String
+  ownerId   String
+  users     RoomUser[]
+  messages  Message[]
+  createdAt DateTime   @default(now())
+}
+
+model Message {
   id        String      @id @default(cuid()) @map("_id")
+  roomId    String
   message   String
   createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  role      CallRole
   type      messageType
+  senderId  String
+
+  sender RoomUser @relation(fields: [senderId], references: [id])
+  room   Room     @relation(fields: [roomId], references: [id])
 }
