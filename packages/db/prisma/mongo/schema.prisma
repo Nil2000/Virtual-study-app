@@ -23,6 +23,7 @@ model User {
   userAuthId  String     @unique
   avatarUrl   String
   joinedRooms RoomUser[]
+  messages    Message[]
 }
 
 model RoomUser {
@@ -32,7 +33,6 @@ model RoomUser {
   role     CallRole
   joinedAt DateTime  @default(now())
   leftAt   DateTime?
-  messages Message[]
   roomId   String
 
   user User @relation(fields: [userId], references: [id])
@@ -56,6 +56,6 @@ model Message {
   type      messageType
   senderId  String
 
-  sender RoomUser @relation(fields: [senderId], references: [id])
-  room   Room     @relation(fields: [roomId], references: [id])
+  sender User @relation(fields: [senderId], references: [id])
+  room   Room @relation(fields: [roomId], references: [id])
 }

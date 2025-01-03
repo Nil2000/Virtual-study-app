@@ -174,7 +174,7 @@ export class ChatManager {
       return messages;
     } catch (error) {
       console.log("ERROR in getMessages", error);
-      return [];
+      return null;
     }
   }
 }

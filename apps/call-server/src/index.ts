@@ -3,7 +3,8 @@ import http from "http";
 import { Server } from "socket.io";
 import { UserManager } from "./managers/userManager";
 import { createMediasoupWorker } from "./utils/worker";
-import { WebRtcTransport } from "mediasoup/node/lib/WebRtcTransportTypes";
+import { ChatManager } from "./managers/chatManager";
+
 const app = express();
 
 const server = http.createServer(app);
@@ -15,6 +16,17 @@ const io = new Server(server, {
 });
 const connections = io.of("/call");
 const userManager = new UserManager();
+const chatManager = new ChatManager();
+
+app.get("/chats", (req, res) => {
+  const { roomId } = req.body;
+  const messages = chatManager.getMessages(roomId);
+  if (!messages) {
+    res.status(404).json({ message: "No messages found" });
+  } else {
+    res.status(200).json(messages);
+  }
+});
 
 connections.on("connection", (socket) => {
   console.log("A user connected");
@@ -115,6 +127,19 @@ connections.on("connection", (socket) => {
   socket.on("disconnect", () => {
     userManager.removePeer(socket.id);
     console.log("A user disconnected");
+  });
+
+  socket.on("new-chat-peer", async (data) => {
+    await chatManager.createUser(data.userAuthId, data.avatarUrl);
+    socket.emit("chat-peer-created");
+  });
+
+  socket.on("new-chat-room", async (data) => {
+    await chatManager.createRoom(data.roomName, data.userId, data.roomId);
+  });
+
+  socket.on("join-chat-room", async (data) => {
+    await chatManager.joinRoom(data.roomId, data.userId);
   });
 });
 
