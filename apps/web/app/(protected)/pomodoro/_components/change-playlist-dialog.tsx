@@ -14,7 +14,9 @@ import React from "react";
 
 export default function ChangePlayListDialog({
   changePlayList,
+  disabled,
 }: {
+  disabled: boolean;
   changePlayList: (url: string) => void;
 }) {
   const [url, setUrl] = React.useState<string>("");
@@ -25,7 +27,7 @@ export default function ChangePlayListDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Change Playlist</Button>
+        <Button disabled={disabled}>Change Playlist</Button>
       </DialogTrigger>
       <DialogContent className="font-sans">
         <DialogHeader>

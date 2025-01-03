@@ -40,6 +40,7 @@ export const useSpotify = () => {
   const [muted, setMuted] = React.useState<boolean>(false);
   const [vol, setVol] = React.useState<number>(50);
   const [playListInfo, setPlayListInfo] = React.useState<string | undefined>();
+  const [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 
   const checkLoggedInOrNot = () => {
     if (accessToken && refreshToken) {
@@ -57,6 +58,15 @@ export const useSpotify = () => {
     if (!isLoggedIn) {
       //console.log("Spotify not logged in");
       return;
+    }
+
+    if (checkTokenExpiry()) {
+      try {
+        await refreshSpotifyToken();
+      } catch (error) {
+        console.log("Error refreshing token", error);
+        return;
+      }
     }
 
     if (typeof window === "undefined") {
@@ -140,6 +150,7 @@ export const useSpotify = () => {
     if (player) {
       player.pause();
     }
+    setIsPlaying(false);
   };
 
   const play = () => {
@@ -173,6 +184,7 @@ export const useSpotify = () => {
               device_id,
             });
             player.resume();
+            setIsPlaying(true);
             return;
           }
           //If not playing, play
@@ -195,6 +207,7 @@ export const useSpotify = () => {
 
           //console.log("Playing");
           player.resume();
+          setIsPlaying(true);
         } catch (error) {
           console.error("Error playing", error);
         }
@@ -204,6 +217,10 @@ export const useSpotify = () => {
 
   const getPlayListDetails = async (playlistId: string) => {
     if (!accessToken) return;
+
+    if (checkTokenExpiry()) {
+      await refreshSpotifyToken();
+    }
 
     try {
       const res = await axios.post(`/api/spotify/playlist/`, {
@@ -220,6 +237,7 @@ export const useSpotify = () => {
   const refreshSpotifyToken = async () => {
     if (!refreshToken) {
       //console.log("No refresh token found");
+      // setIsLoggedIn(false);
       return;
     }
 
@@ -266,7 +284,6 @@ export const useSpotify = () => {
   React.useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
     if (isLoggedIn) {
-      refreshSpotifyToken();
       setUpSpotify();
       getPlayListDetails(currentPlaylistId);
       intervalId = setInterval(
@@ -307,5 +324,6 @@ export const useSpotify = () => {
     vol,
     start,
     playListInfo,
+    isPlaying,
   };
 };

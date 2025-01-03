@@ -36,6 +36,7 @@ export default function PomodoroSec({
 }: PomodoroSecProps) {
   let intervalId: NodeJS.Timeout | null = null;
   const [isRunning, setIsRunning] = React.useState(false);
+  const [selectedTime, setSelectedTime] = React.useState<any>(null);
   const [time, setTime] = React.useState<number>(0);
   const [breakTime, setBreakTime] = React.useState<number>(0);
   const [workTime, setWorkTime] = React.useState<number>(0);
@@ -74,6 +75,7 @@ export default function PomodoroSec({
     if (!hours || !bTime || !wTime) {
       return;
     }
+    setSelectedTime(new Date(Date.now()).getTime());
     setTime(parseFloat(hours) * 60 * 60);
     setWorkTime(parseFloat(wTime) * 60);
     setBreakTime(parseFloat(bTime) * 60);
@@ -83,6 +85,7 @@ export default function PomodoroSec({
     setTime(0);
     setIsRunning(false);
     stop();
+    setSelectedTime(null);
   };
 
   const playAlarm = () => {
@@ -94,11 +97,16 @@ export default function PomodoroSec({
   };
 
   const sessionCompleted = async () => {
-    console.log("Session completed");
-    await axios.post("/api/pomodoro", {
-      createdTime: new Date().getTime(),
-      endTime: new Date(Date.now()),
-    });
+    try {
+      console.log("Session completed");
+      await axios.post("/api/pomodoro", {
+        createdTime: new Date(Date.now() - selectedTime).getTime(),
+        endTime: new Date(Date.now()).getTime(),
+      });
+      setSelectedTime(null);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const stopPomodoro = () => {

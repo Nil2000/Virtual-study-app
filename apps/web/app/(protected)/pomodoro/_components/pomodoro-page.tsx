@@ -19,6 +19,7 @@ export default function PomodoroPage() {
     vol,
     start,
     playListInfo,
+    isPlaying,
   } = useSpotify();
   const confettiRef = React.useRef<ConfettiRef>(null);
 
@@ -41,6 +42,7 @@ export default function PomodoroPage() {
           changePlaylist={changePlaylist}
           generateSpotifyAuthURL={generateSpotifyAuthURL}
           playListInfo={playListInfo}
+          isPlaying={isPlaying}
         />
       </div>
       <Confetti ref={confettiRef} className="h-full" />

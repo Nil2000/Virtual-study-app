@@ -1,27 +1,27 @@
 {
-	"name": "@repo/db",
-	"version": "1.0.0",
-	"main": "index.js",
-	"exports": {
-		".": "./src/index.ts"
-	},
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"db:generate": "prisma generate",
-		"db:push": "prisma db push --skip-generate"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"description": "",
-	"devDependencies": {
-		"@repo/typescript-config": "workspace:*",
-		"@types/node": "^22.9.0",
-		"prisma": "^5.22.0",
-		"tsx": "^4.19.2",
-		"typescript": "5.5.4"
-	},
-	"dependencies": {
-		"@prisma/client": "5.22.0"
-	}
+  "name": "@repo/db",
+  "version": "1.0.0",
+  "main": "index.js",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push --skip-generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.9.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "5.5.4"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  }
 }

@@ -18,6 +18,7 @@ interface SpotifyComponentProps {
   changePlaylist: any;
   generateSpotifyAuthURL: () => string;
   playListInfo: any;
+  isPlaying: boolean;
 }
 
 export default function SpotifyComponent({
@@ -26,6 +27,7 @@ export default function SpotifyComponent({
   changePlaylist,
   generateSpotifyAuthURL,
   playListInfo,
+  isPlaying,
 }: SpotifyComponentProps) {
   return (
     <div className="relative w-full h-full">
@@ -54,7 +56,10 @@ export default function SpotifyComponent({
               </h2>
             )}
             <SongCard track={currentPlaying} />
-            <ChangePlayListDialog changePlayList={changePlaylist} />
+            <ChangePlayListDialog
+              changePlayList={changePlaylist}
+              disabled={isPlaying}
+            />
           </div>
         </CardDescription>
         <CardFooter />
