@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-
+  console.log(playlistId, access_token);
   //retrieve playlist from Spotify API using token
   try {
     const res = await axios.get(

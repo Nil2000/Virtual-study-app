@@ -1,9 +1,11 @@
-import { postgresClient } from "@repo/db";
+import { prismaPostgres } from "@repo/db";
 
-// const globalForPrisma = globalThis as unknown as { prisma: postgresClient | undefined };
+// const globalForPrisma = global as unknown as {
+//   prisma: prismaPostgres.PrismaClient;
+// };
 
-// export const db = globalForPrisma.prisma || new PrismaClient();
+// export const db = globalForPrisma.prisma || new prismaPostgres.PrismaClient();
 
 // if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
 
-export const db = postgresClient;
+export const db = prismaPostgres;

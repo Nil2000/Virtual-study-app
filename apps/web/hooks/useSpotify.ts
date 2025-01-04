@@ -73,15 +73,6 @@ export const useSpotify = () => {
       return;
     }
 
-    if (checkTokenExpiry()) {
-      try {
-        await refreshSpotifyToken();
-      } catch (error) {
-        console.log("Error refreshing token", error);
-        return;
-      }
-    }
-
     window.onSpotifyWebPlaybackSDKReady = () => {
       const spotifyPlayer = new window.Spotify.Player({
         name: "Pomodoro Player",
@@ -284,8 +275,9 @@ export const useSpotify = () => {
   React.useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
     if (isLoggedIn) {
-      setUpSpotify();
-      getPlayListDetails(currentPlaylistId);
+      setUpSpotify().then(() => {
+        getPlayListDetails(currentPlaylistId);
+      });
       intervalId = setInterval(
         () => {
           refreshSpotifyToken();

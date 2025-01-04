@@ -129,9 +129,17 @@ connections.on("connection", (socket) => {
     console.log("A user disconnected");
   });
 
+  //Chat socket events
   socket.on("new-chat-peer", async (data) => {
-    await chatManager.createUser(data.userAuthId, data.avatarUrl);
-    socket.emit("chat-peer-created");
+    const user = await chatManager.createChatUser(
+      data.userAuthId,
+      data.avatarUrl
+    );
+    if (user) {
+      socket.emit("chat-peer-created", null);
+      return;
+    }
+    socket.emit("chat-peer-created", user);
   });
 
   socket.on("new-chat-room", async (data) => {

@@ -1,13 +1,13 @@
-import { mongoClient, MongoClientType } from "@repo/db";
+import { prismaMongo } from "@repo/db";
 
 export class ChatManager {
-  private dbClient: MongoClientType;
+  private dbClient: typeof prismaMongo;
 
   constructor() {
-    this.dbClient = mongoClient;
+    this.dbClient = prismaMongo;
   }
 
-  async createUser(userAuthId: string, avatarUrl: string) {
+  async createChatUser(userAuthId: string, avatarUrl: string) {
     try {
       const user = await this.dbClient.user.findUnique({
         where: {
@@ -43,7 +43,6 @@ export class ChatManager {
       if (dbRoom) {
         return dbRoom;
       }
-
       const room = await this.dbClient.room.create({
         data: {
           id: roomId,
@@ -160,8 +159,6 @@ export class ChatManager {
           sender: {
             select: {
               id: true,
-              name: true,
-              role: true,
             },
           },
           createdAt: true,

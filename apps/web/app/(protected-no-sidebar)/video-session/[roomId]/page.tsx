@@ -2,7 +2,7 @@ import React from "react";
 import VideoSessionNavbar from "../../_components/video-session-navbar";
 import VideoSessionContent from "../../_components/video-session-content";
 import { getRole, getRoomName } from "@/actions/roomActions";
-import { RoomParticipantRole } from "@prisma/client";
+import { Role, RoomParticipantRole } from "@repo/db";
 
 export default async function page({
   params,
