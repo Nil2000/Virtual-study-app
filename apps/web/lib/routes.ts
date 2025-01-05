@@ -4,8 +4,8 @@
  */
 export const publicRoutes: string[] = [
   "/auth/verify-email",
-  "/video",
-  "/video-session/abc-123-def",
+  // "/video",
+  // "/video-session/abc-123-def",
 ];
 
 /**

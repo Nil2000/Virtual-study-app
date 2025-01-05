@@ -29,7 +29,7 @@ app.get("/chats", (req, res) => {
 });
 
 connections.on("connection", (socket) => {
-  console.log("A user connected");
+  //console.log("A user connected");
   socket.emit("connection-success", {
     socketId: socket.id,
   });
@@ -54,7 +54,7 @@ connections.on("connection", (socket) => {
     userManager
       .createTransport(socket.id, data.roomId, data.consumer)
       .then((transport: any) => {
-        console.log("Transport ->", transport.id);
+        //console.log("Transport ->", transport.id);
         callback({
           params: {
             id: transport.id,
@@ -73,7 +73,7 @@ connections.on("connection", (socket) => {
   });
 
   socket.on("connect-transport", async (data) => {
-    console.log("DTLS Parameters", data.dtlsParameters);
+    //console.log("DTLS Parameters", data.dtlsParameters);
 
     await userManager.connectTransport(
       socket.id,
@@ -83,13 +83,13 @@ connections.on("connection", (socket) => {
   });
 
   socket.on("produce-transport", async (data, callback) => {
-    // console.log("Produce transport", data);
+    // //console.log("Produce transport", data);
 
     const producer = await userManager.produceTransport(socket.id, data);
 
     userManager.addProducerToRoom(socket.id, data.roomId, producer!, data.kind);
 
-    console.log("Need to inform consumers");
+    //console.log("Need to inform consumers");
 
     userManager.informAllConsumers(data.roomId, producer!.id, socket.id);
 
@@ -110,7 +110,7 @@ connections.on("connection", (socket) => {
       );
       callback({ params });
     } catch (error) {
-      console.log("Error consuming transport", error);
+      //console.log("Error consuming transport", error);
       callback({ error });
     }
   });
@@ -126,28 +126,66 @@ connections.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     userManager.removePeer(socket.id);
-    console.log("A user disconnected");
+    //console.log("A user disconnected");
   });
 
   //Chat socket events
-  socket.on("new-chat-peer", async (data) => {
-    const user = await chatManager.createChatUser(
+  socket.on("create-chat-peer", async (data, callback) => {
+    const resp = await chatManager.createChatUser(
       data.userAuthId,
       data.avatarUrl
     );
-    if (user) {
-      socket.emit("chat-peer-created", null);
-      return;
+    callback({ resp });
+  });
+
+  socket.on("join-chat-room", async (data, callback) => {
+    console.log("Joining chat room", data);
+    try {
+      const res = await chatManager.joinRoom(
+        data.roomId,
+        data.userId,
+        data.role,
+        data.aliasName
+      );
+      if (res?.error) {
+        callback(res);
+      }
+
+      socket.join(data.roomId);
+
+      const messages = await chatManager.getMessages(data.roomId);
+      socket.emit("chat-history", messages);
+
+      socket.to(data.roomId).emit("user-joined", {
+        userId: data.userId,
+        aliasName: data.aliasName,
+        role: data.role ? "HOST" : "PARTICIPANT",
+      });
+
+      callback({ message: "Room joined successfully" });
+    } catch (error) {
+      console.log("Error joining room", error);
+      callback({ error });
     }
-    socket.emit("chat-peer-created", user);
   });
 
-  socket.on("new-chat-room", async (data) => {
-    await chatManager.createRoom(data.roomName, data.userId, data.roomId);
-  });
+  socket.on("send-message", async (data, callback) => {
+    const { roomId, body, userId } = data;
+    try {
+      await chatManager.addMessageToRoom(roomId, body, userId);
 
-  socket.on("join-chat-room", async (data) => {
-    await chatManager.joinRoom(data.roomId, data.userId);
+      io.to(roomId).emit("new-message", {
+        roomId,
+        message: body,
+        senderId: userId,
+        createdAt: new Date(),
+      });
+
+      callback({ success: true });
+    } catch (error) {
+      console.error("Error in send-message:", error);
+      callback({ success: false, error: "Internal server error" });
+    }
   });
 });
 
@@ -158,5 +196,5 @@ createMediasoupWorker();
 // }
 
 server.listen(3000, () => {
-  console.log("Server is running on port 3000");
+  //console.log("Server is running on port 3000");
 });

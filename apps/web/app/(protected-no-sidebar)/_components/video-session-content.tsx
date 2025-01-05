@@ -13,9 +13,11 @@ import { useVideoCall } from "@/hooks/useVideoCall";
 export default function VideoSessionContent({
   roomId,
   isAdmin,
+  aliasName,
 }: {
   roomId: string;
   isAdmin: boolean;
+  aliasName: string;
 }) {
   const remoteVideoContainerRef = React.useRef<HTMLDivElement | null>(null);
   const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
@@ -24,6 +26,7 @@ export default function VideoSessionContent({
   const { socket, isConnected, videoNodeLength } = useVideoCall({
     roomId,
     isAdmin,
+    aliasName,
     localVideoRef,
     serverUrl: process.env.NEXT_PUBLIC_VIDEO_SERVER_URL || "",
     videoContainerRef: remoteVideoContainerRef,

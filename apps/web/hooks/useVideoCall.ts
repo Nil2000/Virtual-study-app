@@ -8,11 +8,13 @@ import {
   Transport,
 } from "mediasoup-client/lib/types";
 import { io, Socket } from "socket.io-client";
+import { useSession } from "next-auth/react";
 
 interface VideoCallProps {
   roomId: string;
   isAdmin: boolean;
   serverUrl: string;
+  aliasName: string;
   videoContainerRef: React.MutableRefObject<HTMLDivElement | null>;
   localVideoRef: React.MutableRefObject<HTMLVideoElement | null>;
   audioContainerRef: React.MutableRefObject<HTMLDivElement | null>;
@@ -25,7 +27,9 @@ export const useVideoCall = ({
   videoContainerRef,
   localVideoRef,
   audioContainerRef,
+  aliasName,
 }: VideoCallProps) => {
+  const { data } = useSession();
   const [socket, setSocket] = useState<Socket | null>(null);
   const localAudioTrackRef = useRef<MediaStreamTrack | null>(null);
   const localVideoTrackRef = useRef<MediaStreamTrack | null>(null);
@@ -63,6 +67,22 @@ export const useVideoCall = ({
     socket.emit("create-peer", { roomId }, () => {
       console.log("Peer created");
     });
+    console.log(data?.user);
+    socket.emit(
+      "create-chat-peer",
+      {
+        userAuthId: data?.user?.id,
+        avatarUrl: data?.user?.image,
+      },
+      (data: any) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          console.log("Chat peer created");
+          joinChatRoom(socket);
+        }
+      }
+    );
   };
 
   const joinRoom = async (socket: Socket) => {
@@ -327,6 +347,21 @@ export const useVideoCall = ({
     setVideoNode((prev) => prev.filter((id) => id !== producerId));
     const container = document.getElementById(`container_${producerId}`);
     container?.remove();
+  };
+
+  const joinChatRoom = async (socket: Socket) => {
+    console.log("Joining chat room");
+    socket.emit(
+      "join-chat-room",
+      { roomId, userId: data?.user.id, role: isAdmin, aliasName },
+      (data: any) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          console.log(data.message);
+        }
+      }
+    );
   };
 
   useEffect(() => {

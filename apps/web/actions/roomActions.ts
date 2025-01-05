@@ -269,6 +269,39 @@ export const getRole = async (roomId: string) => {
   return participant?.role;
 };
 
+export const getAliasName = async (roomId: string) => {
+  const session = await auth();
+
+  const participant = await db.roomParticipant.findUnique({
+    where: {
+      roomId_userId: {
+        roomId: roomId,
+        userId: session?.user.id!,
+      },
+    },
+  });
+
+  return participant?.name;
+};
+
+export const getUserSpecificDetails = async (roomId: string) => {
+  const session = await auth();
+
+  const participant = await db.roomParticipant.findUnique({
+    where: {
+      roomId_userId: {
+        roomId: roomId,
+        userId: session?.user.id!,
+      },
+    },
+  });
+
+  return {
+    roomAlisaName: participant?.name,
+    role: participant?.role,
+  };
+};
+
 /*
  * Get room name
  * @param roomId

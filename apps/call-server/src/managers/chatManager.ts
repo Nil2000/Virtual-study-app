@@ -1,4 +1,5 @@
-import { prismaMongo } from "@repo/db";
+import { CallRole } from "@repo/db";
+import { db as prismaMongo } from "../utils/db";
 
 export class ChatManager {
   private dbClient: typeof prismaMongo;
@@ -11,7 +12,7 @@ export class ChatManager {
     try {
       const user = await this.dbClient.user.findUnique({
         where: {
-          id: userAuthId,
+          userAuthId: userAuthId,
         },
       });
 
@@ -22,17 +23,19 @@ export class ChatManager {
       const newUser = await this.dbClient.user.create({
         data: {
           userAuthId: userAuthId,
-          avatarUrl: avatarUrl,
+          avatarUrl: avatarUrl ? avatarUrl : "",
         },
       });
       return newUser;
     } catch (error) {
       console.log("ERROR in createRoomUser", error);
-      return null;
+      return {
+        error: error,
+      };
     }
   }
 
-  async createRoom(roomName: string, userId: string, roomId: string) {
+  async createRoom(userId: string, roomId: string) {
     try {
       const dbRoom = await this.dbClient.room.findUnique({
         where: {
@@ -46,7 +49,6 @@ export class ChatManager {
       const room = await this.dbClient.room.create({
         data: {
           id: roomId,
-          name: roomName,
           ownerId: userId,
         },
       });
@@ -81,7 +83,6 @@ export class ChatManager {
       });
       return roomUser.map((room) => ({
         id: room.room.id,
-        name: room.room.name,
         joinedAt: room.joinedAt,
         leftAt: room.leftAt,
       }));
@@ -91,7 +92,13 @@ export class ChatManager {
     }
   }
 
-  async joinRoom(roomId: string, userId: string) {
+  async joinRoom(
+    roomId: string,
+    userId: string,
+    role: boolean,
+    aliasName: string
+  ) {
+    console.log("Joining room", roomId, userId, role, aliasName);
     try {
       const room = await this.dbClient.room.findUnique({
         where: {
@@ -100,18 +107,30 @@ export class ChatManager {
       });
 
       if (!room) {
-        return null;
+        await this.createRoom(userId, roomId);
       }
 
       const user = await this.dbClient.user.findUnique({
         where: {
-          id: userId,
+          userAuthId: userId,
         },
       });
 
       if (!user) {
-        return null;
+        return {
+          error: "User not found",
+        };
       }
+
+      const roomUser = await this.dbClient.roomUser.create({
+        data: {
+          userId: user.id,
+          roomId: roomId,
+          role: role ? CallRole.HOST : CallRole.PARTICIPANT,
+          joinedAt: new Date(Date.now()),
+          name: aliasName,
+        },
+      });
 
       await this.dbClient.room.update({
         where: {
@@ -120,11 +139,14 @@ export class ChatManager {
         data: {
           users: {
             connect: {
-              id: userId,
+              id: roomUser.id,
             },
           },
         },
       });
+      return {
+        message: "Room joined successfully",
+      };
     } catch (error) {
       console.log("ERROR in joinRoom", error);
       return null;

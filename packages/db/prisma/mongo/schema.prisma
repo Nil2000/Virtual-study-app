@@ -41,7 +41,6 @@ model RoomUser {
 
 model Room {
   id        String     @id @default(cuid()) @map("_id")
-  name      String
   ownerId   String
   users     RoomUser[]
   messages  Message[]
