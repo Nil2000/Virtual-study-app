@@ -187,9 +187,20 @@ export class ChatManager {
           createdAt: new Date(),
           type: type,
         },
+        select: {
+          id: true,
+          message: true,
+          type: true,
+          createdAt: true,
+          sender: {
+            select: {
+              name: true,
+            },
+          },
+        },
       });
 
-      return message;
+      return { message, error: null };
     } catch (error: any) {
       console.error("ERROR in addMessageToRoom:", error.message);
       return {

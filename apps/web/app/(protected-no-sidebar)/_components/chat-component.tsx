@@ -144,8 +144,8 @@ export default function ChatComponent({
             >
               {message.type === "TEXT" ? (
                 <>
-                  <span className={`${"text-white"} font-bold`}>
-                    {message.name}
+                  <span className={`${"text-foreground"} font-bold`}>
+                    {message.sender.name} :{" "}
                   </span>
                   {message.message}
                 </>
@@ -170,7 +170,13 @@ export default function ChatComponent({
           className="min-h-[none] resize-none"
           value={sendMessage}
         />
-        <Button className="p-3" onClick={() => handleSendMessage(sendMessage)}>
+        <Button
+          className="p-3"
+          onClick={() => {
+            handleSendMessage(sendMessage);
+            setSendMessage("");
+          }}
+        >
           <Send />
         </Button>
       </div>

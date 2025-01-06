@@ -363,7 +363,7 @@ export const useVideoCall = ({
           console.error(data.error);
         } else {
           console.log(data.message);
-          setRoomUserId(data.roomUserId);
+          setRoomUserId(data.userId);
         }
       }
     );
@@ -410,6 +410,11 @@ export const useVideoCall = ({
       socket.on("chat-history", (messages: any) => {
         setChatMessages((prev) => [...prev, ...messages.messages]);
         setIsChatLoading(false);
+      });
+
+      socket.on("new-message", (message: any) => {
+        console.log("New message", message);
+        setChatMessages((prev) => [...prev, message]);
       });
     };
 

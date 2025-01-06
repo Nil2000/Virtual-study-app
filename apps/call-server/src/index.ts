@@ -165,11 +165,11 @@ connections.on("connection", (socket) => {
         messages,
       });
 
-      // socket.to(data.roomId).emit("user-joined", {
-      //   userId: data.userId,
-      //   aliasName: data.aliasName,
-      //   role: data.role ? "HOST" : "PARTICIPANT",
-      // });
+      socket.to(data.roomId).emit("user-joined", {
+        userId: data.userId,
+        aliasName: data.aliasName,
+        role: data.role ? "HOST" : "PARTICIPANT",
+      });
 
       callback({
         message: "Room joined successfully",
@@ -190,13 +190,11 @@ connections.on("connection", (socket) => {
         userId,
         "TEXT"
       );
-
-      io.to(roomId).emit("new-message", {
-        roomId,
-        message,
-        senderId: userId,
-        createdAt: new Date(Date.now()),
-      });
+      if (res.error) {
+        callback({ success: false, error: res.error });
+        return;
+      }
+      socket.to(roomId).emit("new-message", res.message);
 
       callback({ success: true, message: res });
     } catch (error) {
