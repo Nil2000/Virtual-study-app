@@ -75,9 +75,11 @@ const mockMessages = [
 export default function ChatComponent({
   isLoading,
   chatMessages,
+  handleSendMessage,
 }: {
   isLoading: boolean;
   chatMessages: any[];
+  handleSendMessage: (message: string) => void;
 }) {
   const [sendMessage, setSendMessage] = React.useState<string>("");
   const [messages, setMessages] = React.useState<any[]>([]);
@@ -105,13 +107,14 @@ export default function ChatComponent({
     textarea.style.height = `${newHeight}px`;
     setSendMessage(e.target.value);
   };
+  // console.log("Messages", messages);
   useEffect(() => {
     if (chatMessages) {
-      console.log("chatMessages", chatMessages);
-      setMessages((prev) => [...prev, ...chatMessages]);
+      console.log("chatMessages->", chatMessages);
+      setMessages(chatMessages);
     }
   }, [chatMessages]);
-
+  console.log("chatMessages->", chatMessages);
   useEffect(() => {
     // if (scrollAreaRef.current) {
     //   const scrollContainer = scrollAreaRef.current.querySelector(
@@ -129,25 +132,9 @@ export default function ChatComponent({
         Chat
       </h3>
       <ScrollArea className="h-full" ref={scrollAreaRef}>
-        {/* {mockMessages.map((message) => (
-					<div
-						key={message.id}
-						className={`${
-							message.owner ? "bg-foreground/10" : "bg-transparent"
-						} p-2 text-foreground text-sm`}
-					>
-						<span className={`${message.owner && "text-blue-500"} font-bold`}>
-							{message.name}{" "}
-						</span>
-						: {message.message}
-					</div>
-				))} */}
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary">
-              <Loader2 />
-              Chat loading...
-            </div>
+            <div className="animate-spin rounded-full h-24 w-24 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : messages ? (
           messages.map((message) => (
@@ -156,13 +143,19 @@ export default function ChatComponent({
               className={`${"bg-transparent"} p-2 text-foreground text-sm`}
             >
               {message.type === "TEXT" ? (
-                <span className={`${"text-blue-500"} font-bold`}>
-                  {message.name} {message.message}
-                </span>
+                <>
+                  <span className={`${"text-white"} font-bold`}>
+                    {message.name}
+                  </span>
+                  {message.message}
+                </>
               ) : (
-                <div>{message.message}</div>
+                <div className="text-gray-400 italic text-center w-full">
+                  {message.message}
+                </div>
               )}
             </div>
+            // <div key={message.id}>{JSON.stringify(message)}</div>
           ))
         ) : (
           <div className="text-white">No messages</div>
@@ -177,7 +170,7 @@ export default function ChatComponent({
           className="min-h-[none] resize-none"
           value={sendMessage}
         />
-        <Button className="p-3">
+        <Button className="p-3" onClick={() => handleSendMessage(sendMessage)}>
           <Send />
         </Button>
       </div>

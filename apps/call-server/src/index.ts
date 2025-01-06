@@ -132,7 +132,7 @@ connections.on("connection", (socket) => {
   //Chat socket events
   socket.on("create-chat-peer", async (data, callback) => {
     const resp = await chatManager.createChatUser(data.id, data.avatarUrl);
-    callback({ resp });
+    callback(resp);
   });
 
   socket.on("join-chat-room", async (data, callback) => {
@@ -146,6 +146,7 @@ connections.on("connection", (socket) => {
       );
       if (res?.error) {
         callback(res);
+        return;
       }
 
       socket.join(data.roomId);
@@ -153,14 +154,16 @@ connections.on("connection", (socket) => {
       await chatManager.addMessageToRoom(
         data.roomId,
         `${data.aliasName} joined`,
-        data.userId,
+        res?.roomUserId || "",
         "STATUS_TEXT"
       );
 
       const messages = await chatManager.getMessages(data.roomId);
 
       console.log("Messages->", messages);
-      // socket.emit("chat-history", messages);
+      socket.emit("chat-history", {
+        messages,
+      });
 
       // socket.to(data.roomId).emit("user-joined", {
       //   userId: data.userId,
@@ -168,7 +171,10 @@ connections.on("connection", (socket) => {
       //   role: data.role ? "HOST" : "PARTICIPANT",
       // });
 
-      callback({ message: "Room joined successfully" });
+      callback({
+        message: "Room joined successfully",
+        userId: res?.roomUserId,
+      });
     } catch (error) {
       console.log("Error joining room", error);
       callback({ error });
@@ -176,18 +182,23 @@ connections.on("connection", (socket) => {
   });
 
   socket.on("send-message", async (data, callback) => {
-    const { roomId, body, userId } = data;
+    const { roomId, message, userId } = data;
     try {
-      await chatManager.addMessageToRoom(roomId, body, userId, "TEXT");
+      const res = await chatManager.addMessageToRoom(
+        roomId,
+        message,
+        userId,
+        "TEXT"
+      );
 
       io.to(roomId).emit("new-message", {
         roomId,
-        message: body,
+        message,
         senderId: userId,
-        createdAt: new Date(),
+        createdAt: new Date(Date.now()),
       });
 
-      callback({ success: true });
+      callback({ success: true, message: res });
     } catch (error) {
       console.error("Error in send-message:", error);
       callback({ success: false, error: "Internal server error" });

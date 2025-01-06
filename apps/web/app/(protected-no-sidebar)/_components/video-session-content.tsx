@@ -23,16 +23,22 @@ export default function VideoSessionContent({
   const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
   const audioContainerRef = React.useRef<HTMLDivElement | null>(null);
 
-  const { socket, isConnected, videoNodeLength, chatMessages, isChatLoading } =
-    useVideoCall({
-      roomId,
-      isAdmin,
-      aliasName,
-      localVideoRef,
-      serverUrl: process.env.NEXT_PUBLIC_VIDEO_SERVER_URL || "",
-      videoContainerRef: remoteVideoContainerRef,
-      audioContainerRef: audioContainerRef,
-    });
+  const {
+    socket,
+    isConnected,
+    videoNodeLength,
+    chatMessages,
+    isChatLoading,
+    handleSendMessage,
+  } = useVideoCall({
+    roomId,
+    isAdmin,
+    aliasName,
+    localVideoRef,
+    serverUrl: process.env.NEXT_PUBLIC_VIDEO_SERVER_URL || "",
+    videoContainerRef: remoteVideoContainerRef,
+    audioContainerRef: audioContainerRef,
+  });
 
   React.useEffect(() => {
     console.log("videoNodeLength Changed ->", videoNodeLength);
@@ -47,7 +53,11 @@ export default function VideoSessionContent({
           videoNodeLength={videoNodeLength + 1}
           audioContainerRef={audioContainerRef}
         />
-        <ChatComponent isLoading={isChatLoading} chatMessages={chatMessages} />
+        <ChatComponent
+          isLoading={isChatLoading}
+          chatMessages={chatMessages}
+          handleSendMessage={handleSendMessage}
+        />
       </div>
     </div>
   );

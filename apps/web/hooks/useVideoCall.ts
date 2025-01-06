@@ -31,14 +31,16 @@ export const useVideoCall = ({
 }: VideoCallProps) => {
   const { data } = useSession();
   const [socket, setSocket] = useState<Socket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const localAudioTrackRef = useRef<MediaStreamTrack | null>(null);
   const localVideoTrackRef = useRef<MediaStreamTrack | null>(null);
   const consumingTransportRef = useRef<string[]>([]);
   const consumerTransportRef = useRef<Transport | null>(null);
   const deviceRef = useRef<Device | null>();
   const [videoNode, setVideoNode] = useState<string[]>([]);
-  const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
+  const [isChatLoading, setIsChatLoading] = useState<boolean>(true);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [roomUserId, setRoomUserId] = useState<string | null>(null);
 
   const getLocalStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -80,8 +82,8 @@ export const useVideoCall = ({
         if (data.error) {
           console.error(data.error);
         } else {
-          console.log("Chat peer created");
-          joinChatRoom(socket);
+          console.log("Chat peer created", data);
+          joinChatRoom(socket, data.id);
         }
       }
     );
@@ -351,24 +353,38 @@ export const useVideoCall = ({
     container?.remove();
   };
 
-  const joinChatRoom = async (socket: Socket) => {
-    console.log("Joining chat room");
+  const joinChatRoom = async (socket: Socket, userId: string) => {
+    console.log("Joining chat room", userId);
     socket.emit(
       "join-chat-room",
-      { roomId, userId: data?.user.id, role: isAdmin, aliasName },
+      { roomId, userId, role: isAdmin, aliasName },
       (data: any) => {
         if (data.error) {
           console.error(data.error);
         } else {
           console.log(data.message);
+          setRoomUserId(data.roomUserId);
         }
       }
     );
   };
 
+  const handleSendMessage = (message: string) => {
+    console.log(roomUserId, socket);
+    if (!socketRef.current) return;
+    socketRef.current?.emit(
+      "send-message",
+      { roomId, message, userId: roomUserId },
+      (message: any) => {
+        console.log(message);
+      }
+    );
+  };
   useEffect(() => {
     const newSocket = io(serverUrl);
 
+    socketRef.current = newSocket;
+    setSocket(newSocket);
     const setUpSocketListeners = async (socket: Socket) => {
       socket.on("connection-success", async ({ socketId }) => {
         console.log(`Connected with socketId: ${socketId}`);
@@ -391,17 +407,26 @@ export const useVideoCall = ({
         handleProducerClosed(producerId);
       });
 
-      socket.on("chat-history", (message: any) => {
-        setChatMessages((prev) => [...prev, message]);
+      socket.on("chat-history", (messages: any) => {
+        setChatMessages((prev) => [...prev, ...messages.messages]);
         setIsChatLoading(false);
       });
     };
 
     setUpSocketListeners(newSocket);
-    setSocket(newSocket);
 
     return () => {
       newSocket.disconnect();
+      if (socketRef.current) {
+        socketRef.current = null;
+      }
+      //Close camera and mic
+      if (localAudioTrackRef.current) {
+        localAudioTrackRef.current.stop();
+      }
+      if (localVideoTrackRef.current) {
+        localVideoTrackRef.current.stop();
+      }
     };
   }, [roomId, serverUrl, isAdmin, videoContainerRef, localVideoRef]);
 
@@ -411,5 +436,6 @@ export const useVideoCall = ({
     videoNodeLength: videoNode.length,
     isChatLoading,
     chatMessages,
+    handleSendMessage,
   };
 };

@@ -109,6 +109,7 @@ export class ChatManager {
       if (!room) {
         await this.createRoom(userId, roomId);
       }
+      console.log("Room found", room);
 
       const user = await this.dbClient.user.findUnique({
         where: {
@@ -121,6 +122,7 @@ export class ChatManager {
           error: "User not found",
         };
       }
+      console.log("User found", user);
 
       const roomUser = await this.dbClient.roomUser.create({
         data: {
@@ -146,6 +148,7 @@ export class ChatManager {
       });
       return {
         message: "Room joined successfully",
+        roomUserId: roomUser.id,
       };
     } catch (error) {
       console.log("ERROR in joinRoom", error);
@@ -160,18 +163,38 @@ export class ChatManager {
     type: "TEXT" | "STATUS_TEXT"
   ) {
     try {
-      await this.dbClient.message.create({
+      const room = await this.dbClient.room.findUnique({
+        where: { id: roomId },
+      });
+
+      if (!room) {
+        throw new Error(`Room with ID "${roomId}" does not exist.`);
+      }
+
+      const sender = await this.dbClient.roomUser.findUnique({
+        where: { id: userId },
+      });
+
+      if (!sender) {
+        throw new Error(`User with ID "${userId}" is not part of the room.`);
+      }
+
+      const message = await this.dbClient.message.create({
         data: {
           message: body,
           roomId: roomId,
           senderId: userId,
-          createdAt: new Date(Date.now()),
+          createdAt: new Date(),
           type: type,
         },
       });
-    } catch (error) {
-      console.log("ERROR in addMessageToRoom", error);
-      return null;
+
+      return message;
+    } catch (error: any) {
+      console.error("ERROR in addMessageToRoom:", error.message);
+      return {
+        error: error.message,
+      };
     }
   }
 
@@ -183,20 +206,21 @@ export class ChatManager {
         },
         select: {
           id: true,
+          type: true,
+          createdAt: true,
           message: true,
           sender: {
             select: {
-              id: true,
               name: true,
             },
           },
-          createdAt: true,
         },
         orderBy: {
           createdAt: "asc",
         },
         take: 25,
       });
+      console.log("Messages", messages);
       if (messages.length === 0) {
         return [];
       }
