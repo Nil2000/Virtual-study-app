@@ -131,10 +131,7 @@ connections.on("connection", (socket) => {
 
   //Chat socket events
   socket.on("create-chat-peer", async (data, callback) => {
-    const resp = await chatManager.createChatUser(
-      data.userAuthId,
-      data.avatarUrl
-    );
+    const resp = await chatManager.createChatUser(data.id, data.avatarUrl);
     callback({ resp });
   });
 
@@ -153,14 +150,23 @@ connections.on("connection", (socket) => {
 
       socket.join(data.roomId);
 
-      const messages = await chatManager.getMessages(data.roomId);
-      socket.emit("chat-history", messages);
+      await chatManager.addMessageToRoom(
+        data.roomId,
+        `${data.aliasName} joined`,
+        data.userId,
+        "STATUS_TEXT"
+      );
 
-      socket.to(data.roomId).emit("user-joined", {
-        userId: data.userId,
-        aliasName: data.aliasName,
-        role: data.role ? "HOST" : "PARTICIPANT",
-      });
+      const messages = await chatManager.getMessages(data.roomId);
+
+      console.log("Messages->", messages);
+      // socket.emit("chat-history", messages);
+
+      // socket.to(data.roomId).emit("user-joined", {
+      //   userId: data.userId,
+      //   aliasName: data.aliasName,
+      //   role: data.role ? "HOST" : "PARTICIPANT",
+      // });
 
       callback({ message: "Room joined successfully" });
     } catch (error) {
@@ -172,7 +178,7 @@ connections.on("connection", (socket) => {
   socket.on("send-message", async (data, callback) => {
     const { roomId, body, userId } = data;
     try {
-      await chatManager.addMessageToRoom(roomId, body, userId);
+      await chatManager.addMessageToRoom(roomId, body, userId, "TEXT");
 
       io.to(roomId).emit("new-message", {
         roomId,

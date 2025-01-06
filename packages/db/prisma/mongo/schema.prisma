@@ -15,15 +15,13 @@ enum CallRole {
 
 enum messageType {
   TEXT
-  FILE
+  STATUS_TEXT
 }
 
 model User {
   id          String     @id @default(cuid()) @map("_id")
-  userAuthId  String     @unique
   avatarUrl   String
   joinedRooms RoomUser[]
-  messages    Message[]
 }
 
 model RoomUser {
@@ -34,6 +32,7 @@ model RoomUser {
   joinedAt DateTime  @default(now())
   leftAt   DateTime?
   roomId   String
+  Messages Message[]
 
   user User @relation(fields: [userId], references: [id])
   room Room @relation(fields: [roomId], references: [id])
@@ -55,6 +54,6 @@ model Message {
   type      messageType
   senderId  String
 
-  sender User @relation(fields: [senderId], references: [id])
-  room   Room @relation(fields: [roomId], references: [id])
+  sender RoomUser @relation(fields: [senderId], references: [id])
+  room   Room     @relation(fields: [roomId], references: [id])
 }

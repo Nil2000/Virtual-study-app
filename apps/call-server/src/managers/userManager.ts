@@ -34,7 +34,7 @@ export class UserManager {
   constructor() {
     this.peers = new Map();
     this.roomManager = new RoomManager();
-    console.log("User Manager initialized");
+    //console.log("User Manager initialized");
   }
 
   handleNewPeer(socket: Socket, displayName: string, roomId: string) {
@@ -47,7 +47,7 @@ export class UserManager {
       // consumers: new Map(),
     };
     this.peers.set(socket.id, newPeer);
-    console.log("New peer connected");
+    //console.log("New peer connected");
   }
 
   removePeer(socketId: string) {
@@ -63,7 +63,7 @@ export class UserManager {
       });
 
       this.peers.delete(socketId);
-      console.log("Peer removed");
+      //console.log("Peer removed");
     }
   }
 
@@ -73,7 +73,7 @@ export class UserManager {
       return;
     }
     await this.roomManager.addPeerToRoom(roomId, this.peers.get(socketId)!);
-    console.log("Peer added to room");
+    //console.log("Peer added to room");
   }
 
   getRouter(roomId: string) {
@@ -81,7 +81,7 @@ export class UserManager {
   }
 
   async createTransport(socketId: string, roomId: string, consumer: boolean) {
-    console.log("UserManager Create transport", socketId, roomId, consumer);
+    //console.log("UserManager Create transport", socketId, roomId, consumer);
 
     if (!this.peers.has(socketId)) {
       console.error("Peer not found");
@@ -102,7 +102,7 @@ export class UserManager {
     )?.transport;
 
     if (transport) {
-      console.log("Transport found->", transport.id);
+      //console.log("Transport found->", transport.id);
       return transport;
     }
 
@@ -115,19 +115,18 @@ export class UserManager {
 
     const creationPromise = (async () => {
       try {
-        const newTransport = await router.createWebRtcTransport(
-          transport_options
-        );
+        const newTransport =
+          await router.createWebRtcTransport(transport_options);
 
         newTransport.on("dtlsstatechange", (dtlsState) => {
           if (dtlsState === "closed") {
             newTransport.close();
-            console.log("Transport closed");
+            //console.log("Transport closed");
           }
         });
 
         newTransport.on("@close", () => {
-          console.log("Transport closed", newTransport.id);
+          //console.log("Transport closed", newTransport.id);
         });
 
         peer?.transports.push({
@@ -135,7 +134,7 @@ export class UserManager {
           consumer: consumer,
         });
 
-        console.log("Transport created->", newTransport.id);
+        //console.log("Transport created->", newTransport.id);
         return newTransport;
       } finally {
         this.transportCreationLocks.delete(lockKey);
@@ -164,17 +163,17 @@ export class UserManager {
     )?.transport;
 
     if (!transport) {
-      console.log("Transport not found");
+      //console.log("Transport not found");
       return;
     }
 
     await transport.connect({ dtlsParameters });
 
-    console.log("Transport connected->", transport.id);
+    //console.log("Transport connected->", transport.id);
   }
 
   async produceTransport(socketId: string, data: any) {
-    console.log("UserManager Produce transport");
+    //console.log("UserManager Produce transport");
     const peer = this.peers.get(socketId);
 
     if (!peer) {
@@ -197,7 +196,7 @@ export class UserManager {
     peer.producers.set(producer.id, producer);
 
     producer.on("transportclose", () => {
-      console.log("Producer transport closed");
+      //console.log("Producer transport closed");
       producer.close();
 
       this.roomManager.removeProducer(producer.id, peer.roomId, socketId);
@@ -278,11 +277,11 @@ export class UserManager {
       });
 
       consumer.on("transportclose", () => {
-        console.log("Consumer transport closed");
+        //console.log("Consumer transport closed");
       });
 
       consumer.on("producerclose", () => {
-        console.log("Producer closed");
+        //console.log("Producer closed");
         //TO remove from the list (frontend)
 
         consumer.close();

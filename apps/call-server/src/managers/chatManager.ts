@@ -12,7 +12,7 @@ export class ChatManager {
     try {
       const user = await this.dbClient.user.findUnique({
         where: {
-          userAuthId: userAuthId,
+          id: userAuthId,
         },
       });
 
@@ -22,7 +22,7 @@ export class ChatManager {
 
       const newUser = await this.dbClient.user.create({
         data: {
-          userAuthId: userAuthId,
+          id: userAuthId,
           avatarUrl: avatarUrl ? avatarUrl : "",
         },
       });
@@ -63,7 +63,7 @@ export class ChatManager {
     try {
       const dbUser = await this.dbClient.user.findUnique({
         where: {
-          userAuthId: userAuthId,
+          id: userAuthId,
         },
       });
 
@@ -112,7 +112,7 @@ export class ChatManager {
 
       const user = await this.dbClient.user.findUnique({
         where: {
-          userAuthId: userId,
+          id: userId,
         },
       });
 
@@ -153,7 +153,12 @@ export class ChatManager {
     }
   }
 
-  async addMessageToRoom(roomId: string, body: string, userId: string) {
+  async addMessageToRoom(
+    roomId: string,
+    body: string,
+    userId: string,
+    type: "TEXT" | "STATUS_TEXT"
+  ) {
     try {
       await this.dbClient.message.create({
         data: {
@@ -161,7 +166,7 @@ export class ChatManager {
           roomId: roomId,
           senderId: userId,
           createdAt: new Date(Date.now()),
-          type: "TEXT",
+          type: type,
         },
       });
     } catch (error) {
@@ -177,10 +182,12 @@ export class ChatManager {
           roomId: roomId,
         },
         select: {
+          id: true,
           message: true,
           sender: {
             select: {
               id: true,
+              name: true,
             },
           },
           createdAt: true,
@@ -190,6 +197,9 @@ export class ChatManager {
         },
         take: 25,
       });
+      if (messages.length === 0) {
+        return [];
+      }
       return messages;
     } catch (error) {
       console.log("ERROR in getMessages", error);

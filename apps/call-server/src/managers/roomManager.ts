@@ -53,12 +53,12 @@ export class RoomManager {
 
   constructor() {
     this.rooms = new Map();
-    console.log("Room Manager initialized");
+    //console.log("Room Manager initialized");
   }
 
   async createRoom(roomId: string) {
     if (this.getRoom(roomId)) {
-      console.log("Room already exists");
+      //console.log("Room already exists");
       return;
     }
 
@@ -71,7 +71,7 @@ export class RoomManager {
       producers: [],
       consumers: [],
     });
-    console.log("Room created");
+    //console.log("Room created");
   }
 
   getRoom(roomId: string) {
@@ -90,7 +90,7 @@ export class RoomManager {
   removePeerFromRoom(roomId: string, socketId: string) {
     let room = this.getRoom(roomId);
     if (!room) {
-      console.log("Room not found");
+      //console.log("Room not found");
       return;
     }
     room.peers = room.peers.filter((user) => user.socket.id !== socketId);
@@ -132,7 +132,7 @@ export class RoomManager {
 
     this.rooms.get(roomId)?.transports.push({ socketId, transport, consumer });
 
-    console.log(this.rooms.get(roomId)?.transports);
+    //console.log(this.rooms.get(roomId)?.transports);
   }
 
   async connectTransport(
@@ -147,7 +147,7 @@ export class RoomManager {
       return;
     }
 
-    console.log("CONNECT_TRANSPORT", socketId, consumer);
+    //console.log("CONNECT_TRANSPORT", socketId, consumer);
     const transport = room.transports.find(
       (t) => t.socketId === socketId && t.consumer === consumer
     )?.transport;
@@ -155,16 +155,16 @@ export class RoomManager {
       console.error("Transport not found");
       return;
     }
-    console.log(transport.dtlsState);
+    //console.log(transport.dtlsState);
     if (transport.dtlsState === "connected") {
-      console.log("Transport already connected");
+      //console.log("Transport already connected");
       return;
     }
     await transport.connect({ dtlsParameters });
   }
 
   // async produceTransport(socketId: string, data: any) {
-  //   console.log("ROOM_MANAGER_PRODUCE_TRANSPORT", socketId, data);
+  //   //console.log("ROOM_MANAGER_PRODUCE_TRANSPORT", socketId, data);
   //   const room = this.getRoom(data.roomId);
   //   if (!room) {
   //     console.error("Room not found");
@@ -206,7 +206,7 @@ export class RoomManager {
   }
 
   addConsumer(consumer: Consumer, roomId: string, socketId: string) {
-    console.log("Consumer added");
+    //console.log("Consumer added");
 
     const room = this.getRoom(roomId);
     if (!room) {
@@ -231,7 +231,7 @@ export class RoomManager {
       (consumer) => consumer.consumer.id !== consumerId
     );
 
-    console.log("Consumers after removal->", room.consumers);
+    //console.log("Consumers after removal->", room.consumers);
   }
 
   removeConsumerBySocketId(socketId: string, roomId: string) {
@@ -250,7 +250,7 @@ export class RoomManager {
       (consumer) => consumer.to !== socketId
     );
 
-    console.log("Consumers after removal->", room.consumers);
+    //console.log("Consumers after removal->", room.consumers);
   }
 
   removeProducer(producerId: string, roomId: string, socketId: string) {
@@ -277,7 +277,7 @@ export class RoomManager {
       (producer) => producer.producer.id !== producerId
     );
 
-    console.log("Producers after removal->", room.producers);
+    //console.log("Producers after removal->", room.producers);
   }
 
   getOtherProducerLength(socketId: string, roomId: string) {
@@ -358,7 +358,7 @@ export class RoomManager {
   }
 
   informAllConsumers(roomId: string, producerId: string, socketId: string) {
-    console.log("Informing all consumers");
+    //console.log("Informing all consumers");
 
     const room = this.getRoom(roomId);
 

@@ -37,6 +37,8 @@ export const useVideoCall = ({
   const consumerTransportRef = useRef<Transport | null>(null);
   const deviceRef = useRef<Device | null>();
   const [videoNode, setVideoNode] = useState<string[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
 
   const getLocalStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -71,7 +73,7 @@ export const useVideoCall = ({
     socket.emit(
       "create-chat-peer",
       {
-        userAuthId: data?.user?.id,
+        id: data?.user?.id,
         avatarUrl: data?.user?.image,
       },
       (data: any) => {
@@ -388,6 +390,11 @@ export const useVideoCall = ({
       socket.on("producer-closed", ({ producerId }) => {
         handleProducerClosed(producerId);
       });
+
+      socket.on("chat-history", (message: any) => {
+        setChatMessages((prev) => [...prev, message]);
+        setIsChatLoading(false);
+      });
     };
 
     setUpSocketListeners(newSocket);
@@ -402,5 +409,7 @@ export const useVideoCall = ({
     socket,
     isConnected: !!socket?.connected,
     videoNodeLength: videoNode.length,
+    isChatLoading,
+    chatMessages,
   };
 };
