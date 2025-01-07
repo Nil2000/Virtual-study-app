@@ -149,8 +149,8 @@ connections.on("connection", (socket) => {
         return;
       }
 
-      socket.join(data.roomId);
-
+      await socket.join(data.roomId);
+      console.log(`Socket ${socket.id} joined room: ${data.roomId}`);
       await chatManager.addMessageToRoom(
         data.roomId,
         `${data.aliasName} joined`,
@@ -194,8 +194,14 @@ connections.on("connection", (socket) => {
         callback({ success: false, error: res.error });
         return;
       }
-      socket.to(roomId).emit("new-message", res.message);
+      io.in(roomId)
+        .fetchSockets()
+        .then((sockets) => {
+          console.log(`Clients in room ${roomId}:`, sockets);
+        });
 
+      io.to(roomId).emit("new-message", res.message);
+      console.log(`Emitted new-message to room ${roomId}:`, res.message);
       callback({ success: true, message: res });
     } catch (error) {
       console.error("Error in send-message:", error);

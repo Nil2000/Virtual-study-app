@@ -5,81 +5,16 @@ import { Textarea } from "@repo/ui/components/textarea";
 import { Divide, Loader2, Send } from "lucide-react";
 import React, { ChangeEvent, useEffect } from "react";
 
-const mockMessages = [
-  {
-    id: 1,
-    message:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-    owner: true,
-    name: "John",
-  },
-  {
-    id: 2,
-    message: "Hello",
-    owner: false,
-    name: "Jane",
-  },
-  {
-    id: 3,
-    message:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-    owner: true,
-    name: "John",
-  },
-  {
-    id: 4,
-    message: "Hello",
-    owner: false,
-    name: "Jane",
-  },
-  {
-    id: 5,
-    message:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-    owner: true,
-    name: "John",
-  },
-  {
-    id: 6,
-    message: "Hello",
-    owner: false,
-    name: "Jane",
-  },
-  {
-    id: 7,
-    message:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-    owner: true,
-    name: "John",
-  },
-  {
-    id: 8,
-    message: "Hello",
-    owner: false,
-    name: "Jane",
-  },
-  {
-    id: 9,
-    message: "Hello How are you",
-    owner: false,
-    name: "Jane",
-  },
-  {
-    id: 10,
-    message: "Hello How are you",
-    owner: false,
-    name: "Jane",
-  },
-];
-
 export default function ChatComponent({
   isLoading,
   chatMessages,
   handleSendMessage,
+  isMessageSent,
 }: {
   isLoading: boolean;
   chatMessages: any[];
   handleSendMessage: (message: string) => void;
+  isMessageSent: boolean;
 }) {
   const [sendMessage, setSendMessage] = React.useState<string>("");
   const [messages, setMessages] = React.useState<any[]>([]);
@@ -114,17 +49,14 @@ export default function ChatComponent({
       setMessages(chatMessages);
     }
   }, [chatMessages]);
-  console.log("chatMessages->", chatMessages);
-  useEffect(() => {
-    // if (scrollAreaRef.current) {
-    //   const scrollContainer = scrollAreaRef.current.querySelector(
-    //     "[data-radix-scroll-area-viewport]"
-    //   )!;
-    //   if (scrollContainer) {
-    //     scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    //   }
-    // }
-  }, []);
+  if (scrollAreaRef.current) {
+    const scrollContainer = scrollAreaRef.current.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    )!;
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  }
 
   return (
     <div className="w-[30%] flex flex-col">
@@ -176,6 +108,7 @@ export default function ChatComponent({
             handleSendMessage(sendMessage);
             setSendMessage("");
           }}
+          disabled={isMessageSent}
         >
           <Send />
         </Button>

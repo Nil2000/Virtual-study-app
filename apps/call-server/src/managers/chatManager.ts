@@ -227,11 +227,10 @@ export class ChatManager {
           },
         },
         orderBy: {
-          createdAt: "asc",
+          createdAt: "desc",
         },
         take: 25,
       });
-      console.log("Messages", messages);
       if (messages.length === 0) {
         return [];
       }

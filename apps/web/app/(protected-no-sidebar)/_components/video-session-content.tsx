@@ -30,6 +30,7 @@ export default function VideoSessionContent({
     chatMessages,
     isChatLoading,
     handleSendMessage,
+    isMessgeSent,
   } = useVideoCall({
     roomId,
     isAdmin,
@@ -57,6 +58,7 @@ export default function VideoSessionContent({
           isLoading={isChatLoading}
           chatMessages={chatMessages}
           handleSendMessage={handleSendMessage}
+          isMessageSent={isMessgeSent}
         />
       </div>
     </div>

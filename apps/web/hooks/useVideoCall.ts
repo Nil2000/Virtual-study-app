@@ -9,6 +9,7 @@ import {
 } from "mediasoup-client/lib/types";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
+import { set } from "zod";
 
 interface VideoCallProps {
   roomId: string;
@@ -41,6 +42,7 @@ export const useVideoCall = ({
   const [isChatLoading, setIsChatLoading] = useState<boolean>(true);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [roomUserId, setRoomUserId] = useState<string | null>(null);
+  const [isMessgeSent, setIsMessageSent] = useState<boolean>(false);
 
   const getLocalStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -370,6 +372,8 @@ export const useVideoCall = ({
   };
 
   const handleSendMessage = (message: string) => {
+    if (!message) return;
+    setIsMessageSent(true);
     console.log(roomUserId, socket);
     if (!socketRef.current) return;
     socketRef.current?.emit(
@@ -377,8 +381,20 @@ export const useVideoCall = ({
       { roomId, message, userId: roomUserId },
       (message: any) => {
         console.log(message);
+        setIsMessageSent(false);
       }
     );
+    // setChatMessages((prev) => [
+    //   ...prev,
+    //   {
+    //     id: Math.random(),
+    //     message,
+    //     sender: {
+    //       name: aliasName,
+    //     },
+    //     type: "TEXT",
+    //   },
+    // ]);
   };
   useEffect(() => {
     const newSocket = io(serverUrl);
@@ -408,7 +424,7 @@ export const useVideoCall = ({
       });
 
       socket.on("chat-history", (messages: any) => {
-        setChatMessages((prev) => [...prev, ...messages.messages]);
+        setChatMessages((prev) => [...prev, ...messages.messages.reverse()]);
         setIsChatLoading(false);
       });
 
@@ -442,5 +458,6 @@ export const useVideoCall = ({
     isChatLoading,
     chatMessages,
     handleSendMessage,
+    isMessgeSent,
   };
 };
