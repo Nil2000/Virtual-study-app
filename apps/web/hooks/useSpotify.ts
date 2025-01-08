@@ -151,11 +151,6 @@ export const useSpotify = () => {
   };
 
   const start = () => {
-    // //console.log(
-    //   currentPlaylistId,
-    //   accessToken,
-    //   localStorage.getItem("spotify_device_id")
-    // );
     if (player) {
       player.getCurrentState().then(async (state: any) => {
         try {
@@ -196,7 +191,6 @@ export const useSpotify = () => {
             });
           }
 
-          //console.log("Playing");
           player.resume();
           setIsPlaying(true);
         } catch (error) {
@@ -218,7 +212,6 @@ export const useSpotify = () => {
         playlistId,
         access_token: accessToken,
       });
-      // //console.log(res.data);
       setPlayListInfo(res.data);
     } catch (error) {
       console.error("Error getting playlist details", error);
@@ -227,8 +220,6 @@ export const useSpotify = () => {
 
   const refreshSpotifyToken = async () => {
     if (!refreshToken) {
-      //console.log("No refresh token found");
-      // setIsLoggedIn(false);
       return;
     }
 
@@ -273,6 +264,10 @@ export const useSpotify = () => {
   };
 
   React.useEffect(() => {
+    checkLoggedInOrNot();
+  }, []);
+
+  React.useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
     if (isLoggedIn) {
       setUpSpotify().then(() => {
@@ -296,10 +291,6 @@ export const useSpotify = () => {
       }
     };
   }, [isLoggedIn]);
-
-  React.useEffect(() => {
-    checkLoggedInOrNot();
-  }, []);
 
   return {
     currentPlaying,

@@ -58,7 +58,7 @@ export default function VideoSection({
   }, [videoNodeLength]);
 
   return (
-    <div className="w-[70%] border-r flex flex-col h-[80vh]">
+    <div className="w-[70%] flex flex-col h-[90vh]">
       {/* <VideoFeed /> */}
       {/* <div className="flex justify-center items-center flex-1"> */}
       <div

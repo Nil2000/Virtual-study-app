@@ -1,18 +1,26 @@
 import { CallRole } from "@repo/db";
 import { db as prismaMongo } from "../utils/db";
 import { Socket } from "socket.io";
+import Redis from "ioredis";
 
 export class ChatManager {
   private dbClient: typeof prismaMongo;
   private rooms: Map<string, Socket[]>;
+  private redisClient: Redis;
 
   constructor() {
     this.dbClient = prismaMongo;
     this.rooms = new Map();
+    this.redisClient = new Redis();
   }
 
   async createChatUser(userAuthId: string, avatarUrl: string, socket: Socket) {
     try {
+      const cachedUser = await this.redisClient.get(`user:${userAuthId}`);
+      if (cachedUser) {
+        return JSON.parse(cachedUser);
+      }
+
       const user = await this.dbClient.user.findUnique({
         where: {
           id: userAuthId,
@@ -20,16 +28,28 @@ export class ChatManager {
       });
 
       if (user) {
+        await this.redisClient.set(
+          `user:${userAuthId}`,
+          JSON.stringify(user),
+          "EX",
+          3600
+        );
         return user;
       }
 
       const newUser = await this.dbClient.user.create({
         data: {
           id: userAuthId,
-          avatarUrl: avatarUrl ? avatarUrl : "",
+          avatarUrl: avatarUrl ?? "",
         },
       });
 
+      await this.redisClient.set(
+        `user:${userAuthId}`,
+        JSON.stringify(newUser),
+        "EX",
+        3600
+      );
       return newUser;
     } catch (error) {
       console.log("ERROR in createRoomUser", error);
@@ -41,6 +61,11 @@ export class ChatManager {
 
   async createRoom(userId: string, roomId: string) {
     try {
+      const cachedRoom = await this.redisClient.get(`room:${roomId}`);
+      if (cachedRoom) {
+        return JSON.parse(cachedRoom);
+      }
+
       const dbRoom = await this.dbClient.room.findUnique({
         where: {
           id: roomId,
@@ -48,6 +73,12 @@ export class ChatManager {
       });
 
       if (dbRoom) {
+        await this.redisClient.set(
+          `room:${roomId}`,
+          JSON.stringify(dbRoom),
+          "EX",
+          3600
+        );
         return dbRoom;
       }
       const room = await this.dbClient.room.create({
@@ -60,6 +91,13 @@ export class ChatManager {
       if (this.rooms.has(roomId)) {
         console.log("Room created");
       }
+
+      await this.redisClient.set(
+        `room:${roomId}`,
+        JSON.stringify(room),
+        "EX",
+        3600
+      );
       return room;
     } catch (error) {
       console.log("ERROR in createRoom", error);
@@ -69,6 +107,13 @@ export class ChatManager {
 
   async getJoinedRooms(userAuthId: string) {
     try {
+      const cachedRooms = await this.redisClient.get(
+        `joinedRooms:${userAuthId}`
+      );
+      if (cachedRooms) {
+        return JSON.parse(cachedRooms);
+      }
+
       const dbUser = await this.dbClient.user.findUnique({
         where: {
           id: userAuthId,
@@ -89,11 +134,20 @@ export class ChatManager {
           leftAt: true,
         },
       });
-      return roomUser.map((room) => ({
+
+      const joinedRooms = roomUser.map((room) => ({
         id: room.room.id,
         joinedAt: room.joinedAt,
         leftAt: room.leftAt,
       }));
+
+      await this.redisClient.set(
+        `joinedRooms:${userAuthId}`,
+        JSON.stringify(joinedRooms),
+        "EX",
+        3600
+      );
+      return joinedRooms;
     } catch (error) {
       console.log("ERROR in getJoinedRooms", error);
       return [];
@@ -229,6 +283,11 @@ export class ChatManager {
 
   async getMessages(roomId: string) {
     try {
+      const cachedMessages = await this.redisClient.get(`messages:${roomId}`);
+      if (cachedMessages) {
+        return JSON.parse(cachedMessages);
+      }
+
       const messages = await this.dbClient.message.findMany({
         where: {
           roomId: roomId,
@@ -249,9 +308,17 @@ export class ChatManager {
         },
         take: 25,
       });
+
       if (messages.length === 0) {
         return [];
       }
+
+      await this.redisClient.set(
+        `messages:${roomId}`,
+        JSON.stringify(messages),
+        "EX",
+        3600
+      );
       return messages;
     } catch (error) {
       console.log("ERROR in getMessages", error);

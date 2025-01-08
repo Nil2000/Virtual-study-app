@@ -59,7 +59,7 @@ export default function ChatComponent({
   }
 
   return (
-    <div className="w-[30%] flex flex-col">
+    <div className="w-[30%] flex flex-col border-l">
       <h3 className="text-xl w-full font-bold border-b text-center py-3">
         Chat
       </h3>
