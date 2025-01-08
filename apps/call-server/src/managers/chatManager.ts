@@ -1,14 +1,17 @@
 import { CallRole } from "@repo/db";
 import { db as prismaMongo } from "../utils/db";
+import { Socket } from "socket.io";
 
 export class ChatManager {
   private dbClient: typeof prismaMongo;
+  private rooms: Map<string, Socket[]>;
 
   constructor() {
     this.dbClient = prismaMongo;
+    this.rooms = new Map();
   }
 
-  async createChatUser(userAuthId: string, avatarUrl: string) {
+  async createChatUser(userAuthId: string, avatarUrl: string, socket: Socket) {
     try {
       const user = await this.dbClient.user.findUnique({
         where: {
@@ -26,6 +29,7 @@ export class ChatManager {
           avatarUrl: avatarUrl ? avatarUrl : "",
         },
       });
+
       return newUser;
     } catch (error) {
       console.log("ERROR in createRoomUser", error);
@@ -52,6 +56,10 @@ export class ChatManager {
           ownerId: userId,
         },
       });
+      this.rooms.set(roomId, []);
+      if (this.rooms.has(roomId)) {
+        console.log("Room created");
+      }
       return room;
     } catch (error) {
       console.log("ERROR in createRoom", error);
@@ -96,21 +104,11 @@ export class ChatManager {
     roomId: string,
     userId: string,
     role: boolean,
-    aliasName: string
+    aliasName: string,
+    socket: Socket
   ) {
     console.log("Joining room", roomId, userId, role, aliasName);
     try {
-      const room = await this.dbClient.room.findUnique({
-        where: {
-          id: roomId,
-        },
-      });
-
-      if (!room) {
-        await this.createRoom(userId, roomId);
-      }
-      console.log("Room found", room);
-
       const user = await this.dbClient.user.findUnique({
         where: {
           id: userId,
@@ -123,6 +121,16 @@ export class ChatManager {
         };
       }
       console.log("User found", user);
+      const room = await this.dbClient.room.findUnique({
+        where: {
+          id: roomId,
+        },
+      });
+
+      if (!room) {
+        await this.createRoom(userId, roomId);
+      }
+      console.log("Room found", room);
 
       const roomUser = await this.dbClient.roomUser.create({
         data: {
@@ -146,6 +154,14 @@ export class ChatManager {
           },
         },
       });
+
+      if (this.rooms.has(roomId)) {
+        console.log("Room already exists");
+        this.rooms.get(roomId)?.push(socket);
+      } else {
+        this.rooms.set(roomId, [socket]);
+      }
+
       return {
         message: "Room joined successfully",
         roomUserId: roomUser.id,
@@ -160,7 +176,8 @@ export class ChatManager {
     roomId: string,
     body: string,
     userId: string,
-    type: "TEXT" | "STATUS_TEXT"
+    type: "TEXT" | "STATUS_TEXT",
+    scoket: Socket
   ) {
     try {
       const room = await this.dbClient.room.findUnique({
@@ -200,6 +217,7 @@ export class ChatManager {
         },
       });
 
+      this.broadCastMessage(roomId, message, scoket.id);
       return { message, error: null };
     } catch (error: any) {
       console.error("ERROR in addMessageToRoom:", error.message);
@@ -239,5 +257,26 @@ export class ChatManager {
       console.log("ERROR in getMessages", error);
       return null;
     }
+  }
+
+  async broadCastMessage(roomId: string, message: any, socketId: string) {
+    const sockets = this.rooms.get(roomId);
+    if (sockets) {
+      sockets.forEach((socket) => {
+        if (socket.id !== socketId) {
+          console.log("Emitting message to", socket.id);
+          socket.emit("new-message", message);
+        }
+      });
+    }
+  }
+
+  async handleDisconnect(socketId: string) {
+    this.rooms.forEach((sockets, roomId) => {
+      this.rooms.set(
+        roomId,
+        sockets.filter((socket) => socket.id !== socketId)
+      );
+    });
   }
 }

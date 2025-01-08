@@ -384,17 +384,17 @@ export const useVideoCall = ({
         setIsMessageSent(false);
       }
     );
-    // setChatMessages((prev) => [
-    //   ...prev,
-    //   {
-    //     id: Math.random(),
-    //     message,
-    //     sender: {
-    //       name: aliasName,
-    //     },
-    //     type: "TEXT",
-    //   },
-    // ]);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: Math.random(),
+        message,
+        sender: {
+          name: aliasName,
+        },
+        type: "TEXT",
+      },
+    ]);
   };
   useEffect(() => {
     const newSocket = io(serverUrl);

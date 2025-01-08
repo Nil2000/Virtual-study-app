@@ -131,7 +131,12 @@ connections.on("connection", (socket) => {
 
   //Chat socket events
   socket.on("create-chat-peer", async (data, callback) => {
-    const resp = await chatManager.createChatUser(data.id, data.avatarUrl);
+    const resp = await chatManager.createChatUser(
+      data.id,
+      data.avatarUrl,
+      socket
+    );
+
     callback(resp);
   });
 
@@ -142,20 +147,32 @@ connections.on("connection", (socket) => {
         data.roomId,
         data.userId,
         data.role,
-        data.aliasName
+        data.aliasName,
+        socket
       );
       if (res?.error) {
         callback(res);
         return;
       }
 
-      await socket.join(data.roomId);
+      // await socket.join(data.roomId);
       console.log(`Socket ${socket.id} joined room: ${data.roomId}`);
-      await chatManager.addMessageToRoom(
+      // await chatManager.addMessageToRoom(
+      //   data.roomId,
+      //   `${data.aliasName} joined`,
+      //   res?.roomUserId || "",
+      //   "STATUS_TEXT"
+      // );
+
+      chatManager.broadCastMessage(
         data.roomId,
-        `${data.aliasName} joined`,
-        res?.roomUserId || "",
-        "STATUS_TEXT"
+        {
+          id: Math.random().toString(36),
+          message: `${data.aliasName} joined`,
+          userId: res?.roomUserId || "",
+          type: "STATUS_TEXT",
+        },
+        socket.id
       );
 
       const messages = await chatManager.getMessages(data.roomId);
@@ -165,11 +182,11 @@ connections.on("connection", (socket) => {
         messages,
       });
 
-      socket.to(data.roomId).emit("user-joined", {
-        userId: data.userId,
-        aliasName: data.aliasName,
-        role: data.role ? "HOST" : "PARTICIPANT",
-      });
+      // socket.to(data.roomId).emit("user-joined", {
+      //   userId: data.userId,
+      //   aliasName: data.aliasName,
+      //   role: data.role ? "HOST" : "PARTICIPANT",
+      // });
 
       callback({
         message: "Room joined successfully",
@@ -188,20 +205,21 @@ connections.on("connection", (socket) => {
         roomId,
         message,
         userId,
-        "TEXT"
+        "TEXT",
+        socket
       );
       if (res.error) {
         callback({ success: false, error: res.error });
         return;
       }
-      io.in(roomId)
-        .fetchSockets()
-        .then((sockets) => {
-          console.log(`Clients in room ${roomId}:`, sockets);
-        });
+      // io.in(roomId)
+      //   .fetchSockets()
+      //   .then((sockets) => {
+      //     console.log(`Clients in room ${roomId}:`, sockets);
+      //   });
 
-      io.to(roomId).emit("new-message", res.message);
-      console.log(`Emitted new-message to room ${roomId}:`, res.message);
+      // io.to(roomId).emit("new-message", res.message);
+      // console.log(`Emitted new-message to room ${roomId}:`, res.message);
       callback({ success: true, message: res });
     } catch (error) {
       console.error("Error in send-message:", error);

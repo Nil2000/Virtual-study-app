@@ -72,7 +72,7 @@ export default function ChatComponent({
           messages.map((message) => (
             <div
               key={message.id}
-              className={`${"bg-transparent"} p-2 text-foreground text-sm`}
+              className={`${"bg-transparent"} p-2 text-foreground text-sm whitespace-pre-wrap`}
             >
               {message.type === "TEXT" ? (
                 <>
