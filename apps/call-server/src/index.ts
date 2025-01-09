@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import { UserManager } from "./managers/userManager";
 import { createMediasoupWorker } from "./utils/worker";
 import { ChatManager } from "./managers/chatManager";
+import "dotenv/config";
 
 const app = express();
 
@@ -235,5 +236,5 @@ createMediasoupWorker();
 // }
 
 server.listen(3000, () => {
-  //console.log("Server is running on port 3000");
+  console.log("Server is running on port 3000");
 });

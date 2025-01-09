@@ -11,6 +11,12 @@ export class ChatManager {
   constructor() {
     this.dbClient = prismaMongo;
     this.rooms = new Map();
+    // this.redisClient = new Redis({
+    //   host: process.env.UPSTASH_REDIS_HOST,
+    //   port: parseInt(process.env.UPSTASH_REDIS_PORT || "0"),
+    //   password: process.env.UPSTASH_REDIS_PASSWORD,
+    //   connectTimeout: 10000,
+    // });
     this.redisClient = new Redis();
   }
 

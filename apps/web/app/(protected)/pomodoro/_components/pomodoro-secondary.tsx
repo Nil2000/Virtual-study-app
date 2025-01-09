@@ -100,7 +100,7 @@ export default function PomodoroSec({
     try {
       console.log("Session completed");
       await axios.post("/api/pomodoro", {
-        createdTime: new Date(Date.now() - selectedTime).getTime(),
+        createdTime: selectedTime,
         endTime: new Date(Date.now()).getTime(),
       });
       setSelectedTime(null);
@@ -134,6 +134,7 @@ export default function PomodoroSec({
         setTime((prev) => prev - 1);
       }, 1000);
     } else if (time === 0 && isRunning) {
+      console.log("Isrunning + time is 0");
       stopPomodoro();
     }
     return () => {

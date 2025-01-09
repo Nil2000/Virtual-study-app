@@ -127,7 +127,7 @@ model RoomSessionHistory {
 model PomodoroSession {
   id        String   @id @default(cuid())
   userId    String
-  duration  Int
+  duration  BigInt
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])

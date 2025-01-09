@@ -34,12 +34,6 @@ import { redirect, useRouter } from "next/navigation";
 import React, { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-const studyDurations = [
-  { value: 1, label: "1 hour" },
-  { value: 2, label: "2 hours" },
-  { value: 3, label: "3 hours" },
-  { value: 4, label: "4 hours" },
-];
 
 const groupSizeOptions = [
   { value: 5, label: "5 Students" },
@@ -71,19 +65,30 @@ export default function CreateVideoCard() {
     startTransition(() => {
       createRoom(values).then((res) => {
         if (res?.error) {
-          toast.error(res?.error);
           console.log(res?.error);
+          toast.error(res?.error);
         } else {
           toast.success("Room created successfully");
           const roomId = res.roomId!;
-          joinRoom({ roomId: roomId, joinAs: values.joinAs }, "HOST").then(
-            (res) => {
-              if (res?.error) {
-                toast.error(res?.error);
-              } else {
-                toast.success("Joined room successfully");
+          // joinRoom({ roomId: roomId, joinAs: values.joinAs }, "HOST").then(
+          //   (res) => {
+          //     if (res?.error) {
+          //       toast.error(res?.error);
+          //     } else {
+          //       toast.success("Joined room successfully");
+          //       router.push(`/video-session/${roomId}`);
+          //     }
+          //   }
+          // );
+          toast.promise(
+            joinRoom({ roomId: roomId, joinAs: values.joinAs }, "HOST"),
+            {
+              loading: "Joining room...",
+              success: (res) => {
                 router.push(`/video-session/${roomId}`);
-              }
+                return "Joined room successfully";
+              },
+              error: (err) => err?.error,
             }
           );
         }
