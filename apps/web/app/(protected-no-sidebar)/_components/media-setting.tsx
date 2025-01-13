@@ -26,7 +26,10 @@ export default function MediaSettings({
 }) {
   return (
     <div className="h-[3rem] flex space-x-2 justify-center items-center">
-      <Button className="rounded-full p-3" onClick={toggleMic}>
+      <Button
+        className={`rounded-full p-3 ${!isMic && "bg-red-500 text-white hover:bg-red-500/80"}`}
+        onClick={toggleMic}
+      >
         {isMic ? <Mic size={24} /> : <MicOff size={24} />}
       </Button>
       <Button className="rounded-full p-3" onClick={toggleVideo}>

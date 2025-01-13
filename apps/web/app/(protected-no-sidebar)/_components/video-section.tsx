@@ -8,17 +8,20 @@ export default function VideoSection({
   localVideoRef,
   videoNodeLength,
   audioContainerRef,
+  isAudioMuted,
+  toggleAudio,
 }: {
   remoteVideoRef: React.MutableRefObject<HTMLDivElement | null>;
   localVideoRef: React.MutableRefObject<HTMLVideoElement | null>;
   audioContainerRef: React.MutableRefObject<HTMLDivElement | null>;
   videoNodeLength: number;
+  isAudioMuted: boolean;
+  toggleAudio: () => void;
 }) {
   const [isMic, setIsMic] = React.useState(true);
   const [isVideo, setIsVideo] = React.useState(true);
   const [isScreenShare, setIsScreenShare] = React.useState(false);
 
-  const toggleMic = () => setIsMic((prev) => !prev);
   const toggleVideo = () => setIsVideo((prev) => !prev);
   const toggleScreenShare = () => setIsScreenShare((prev) => !prev);
   const [calculateGrid, setCalculateGrid] = React.useState("");
@@ -80,10 +83,10 @@ export default function VideoSection({
       {/* </div> */}
       <div id="audioContaienr" ref={audioContainerRef}></div>
       <MediaSettings
-        isMic={isMic}
+        isMic={!isAudioMuted}
         isVideo={isVideo}
         isScreenShare={isScreenShare}
-        toggleMic={toggleMic}
+        toggleMic={toggleAudio}
         toggleVideo={toggleVideo}
         toggleScreenShare={toggleScreenShare}
       />

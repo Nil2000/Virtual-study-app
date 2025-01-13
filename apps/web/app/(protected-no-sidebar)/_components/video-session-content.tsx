@@ -31,6 +31,8 @@ export default function VideoSessionContent({
     isChatLoading,
     handleSendMessage,
     isMessgeSent,
+    isAudioMuted,
+    toggleAudio,
   } = useVideoCall({
     roomId,
     isAdmin,
@@ -53,6 +55,8 @@ export default function VideoSessionContent({
           localVideoRef={localVideoRef}
           videoNodeLength={videoNodeLength + 1}
           audioContainerRef={audioContainerRef}
+          isAudioMuted={isAudioMuted}
+          toggleAudio={toggleAudio}
         />
         <ChatComponent
           isLoading={isChatLoading}
