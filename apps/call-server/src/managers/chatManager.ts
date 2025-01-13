@@ -7,6 +7,7 @@ export class ChatManager {
   private dbClient: typeof prismaMongo;
   private rooms: Map<string, Socket[]>;
   private redisClient: Redis;
+  private socketMap: Map<string, { roomId: string; userId: string }>;
 
   constructor() {
     this.dbClient = prismaMongo;
@@ -18,6 +19,7 @@ export class ChatManager {
     //   connectTimeout: 10000,
     // });
     this.redisClient = new Redis();
+    this.socketMap = new Map();
   }
 
   async createChatUser(userAuthId: string, avatarUrl: string, socket: Socket) {
@@ -221,6 +223,7 @@ export class ChatManager {
       } else {
         this.rooms.set(roomId, [socket]);
       }
+      this.socketMap.set(socket.id, { roomId, userId: roomUser.id });
 
       return {
         message: "Room joined successfully",
@@ -345,11 +348,76 @@ export class ChatManager {
   }
 
   async handleDisconnect(socketId: string) {
-    this.rooms.forEach((sockets, roomId) => {
-      this.rooms.set(
-        roomId,
-        sockets.filter((socket) => socket.id !== socketId)
-      );
-    });
+    //inform other users in the room
+    try {
+      // Get user and room information from socket mapping
+      const userInfo = this.socketMap.get(socketId);
+      if (!userInfo) {
+        console.log("No user info found for socket", socketId);
+        return;
+      }
+
+      const { roomId, userId } = userInfo;
+
+      await this.dbClient.roomUser.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          leftAt: new Date(),
+        },
+      });
+
+      const roomUser = await this.dbClient.roomUser.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          name: true,
+        },
+      });
+
+      if (roomUser) {
+        // Create a status message about user leaving
+        // await this.addMessageToRoom(
+        //   roomId,
+        //   `${roomUser.name} has left the room`,
+        //   userId,
+        //   "STATUS_TEXT",
+        //   { id: socketId } as Socket // Minimal socket mock for broadcast
+        // );
+
+        this.broadCastMessage(
+          roomId,
+          {
+            id: Math.random().toString(36),
+            message: `${roomUser.name} left`,
+            userId: userId,
+            type: "STATUS_TEXT",
+          },
+          socketId
+        );
+      }
+
+      // Remove socket from rooms map
+      const sockets = this.rooms.get(roomId);
+      if (sockets) {
+        this.rooms.set(
+          roomId,
+          sockets.filter((socket) => socket.id !== socketId)
+        );
+
+        // If room is empty, clean up Redis cache
+        if (this.rooms.get(roomId)?.length === 0) {
+          await this.redisClient.del(`messages:${roomId}`);
+          await this.redisClient.del(`room:${roomId}`);
+        }
+      }
+
+      // Clean up socket mapping
+      this.socketMap.delete(socketId);
+    } catch (error) {
+      console.error("Error handling disconnect:", error);
+    }
   }
 }

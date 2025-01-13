@@ -127,7 +127,7 @@ connections.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     userManager.removePeer(socket.id);
-    //console.log("A user disconnected");
+    chatManager.handleDisconnect(socket.id);
   });
 
   //Chat socket events
