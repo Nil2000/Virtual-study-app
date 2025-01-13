@@ -316,4 +316,22 @@ export class UserManager {
 
     await consumer.resume();
   }
+
+  async pauseProducer(roomId: string, producerId: string) {
+    const producer = this.roomManager.getProducer(roomId, producerId);
+    if (!producer) {
+      console.error("Producer not found");
+      return;
+    }
+    await producer.pause();
+  }
+
+  async resumeProducer(roomId: string, producerId: string) {
+    const producer = this.roomManager.getProducer(roomId, producerId);
+    if (!producer) {
+      console.error("Producer not found");
+      return;
+    }
+    await producer.resume();
+  }
 }

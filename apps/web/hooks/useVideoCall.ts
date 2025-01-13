@@ -4,12 +4,12 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Consumer,
   Device,
+  Producer,
   RtpCapabilities,
   Transport,
 } from "mediasoup-client/lib/types";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
-import { set } from "zod";
 
 interface VideoCallProps {
   roomId: string;
@@ -43,6 +43,8 @@ export const useVideoCall = ({
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [roomUserId, setRoomUserId] = useState<string | null>(null);
   const [isMessgeSent, setIsMessageSent] = useState<boolean>(false);
+  const audioProducerRef = useRef<Producer | null>(null);
+  const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
 
   const getLocalStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -220,6 +222,7 @@ export const useVideoCall = ({
     videoProducer.on("trackended", () => {
       console.log("video track ended");
     });
+    audioProducerRef.current = audioProducer;
   };
 
   const getProducers = (socket: Socket) => {
@@ -396,6 +399,43 @@ export const useVideoCall = ({
       },
     ]);
   };
+
+  const toggleAudio = () => {
+    if (audioProducerRef.current) {
+      if (audioProducerRef.current.paused) {
+        unMuteAudio();
+      } else {
+        muteAudio();
+      }
+    }
+  };
+
+  const muteAudio = () => {
+    if (audioProducerRef.current) {
+      audioProducerRef.current.pause();
+
+      socketRef.current?.emit("pause-producer", {
+        roomId,
+        producerId: audioProducerRef.current.id,
+      });
+
+      setIsAudioMuted(true);
+    }
+  };
+
+  const unMuteAudio = () => {
+    if (audioProducerRef.current) {
+      audioProducerRef.current.resume();
+
+      socketRef.current?.emit("resume-producer", {
+        roomId,
+        producerId: audioProducerRef.current.id,
+      });
+
+      setIsAudioMuted(false);
+    }
+  };
+
   useEffect(() => {
     const newSocket = io(serverUrl);
 
@@ -459,5 +499,7 @@ export const useVideoCall = ({
     chatMessages,
     handleSendMessage,
     isMessgeSent,
+    isAudioMuted,
+    toggleAudio,
   };
 };

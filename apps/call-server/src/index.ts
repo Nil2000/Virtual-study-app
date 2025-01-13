@@ -125,6 +125,14 @@ connections.on("connection", (socket) => {
     callback(producers);
   });
 
+  socket.on("pause-producer", async (data) => {
+    await userManager.pauseProducer(data.roomId, data.producerId);
+  });
+
+  socket.on("resume-producer", async (data) => {
+    await userManager.resumeProducer(data.roomId, data.producerId);
+  });
+
   socket.on("disconnect", () => {
     userManager.removePeer(socket.id);
     chatManager.handleDisconnect(socket.id);
