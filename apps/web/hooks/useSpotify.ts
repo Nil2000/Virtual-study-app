@@ -42,12 +42,6 @@ export const useSpotify = () => {
   const [playListInfo, setPlayListInfo] = React.useState<string | undefined>();
   const [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 
-  const checkLoggedInOrNot = () => {
-    if (accessToken && refreshToken) {
-      setIsLoggedIn(true);
-    }
-  };
-
   const generateSpotifyAuthURL = () => {
     const state = generateRandomString(16);
     return `https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID}&scope=${SPOTIFY_SCOPES}&redirect_uri=${process.env.NEXT_PUBLIC_SPOTIFY_API_REDIRECT_URI}&state=${state}`;
@@ -263,8 +257,29 @@ export const useSpotify = () => {
     }
   };
 
+  const checkLoggedInOrNot = async () => {
+    if (accessToken && refreshToken) {
+      if (checkTokenExpiry()) {
+        await refreshSpotifyToken();
+      }
+      setIsLoggedIn(true);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("spotify_access_token");
+    localStorage.removeItem("spotify_refresh_token");
+    localStorage.removeItem("spotify_token_expiry");
+    localStorage.removeItem("spotify_playlist_id");
+    localStorage.removeItem("spotify_device_id");
+    setIsLoggedIn(false);
+  };
+
   React.useEffect(() => {
-    checkLoggedInOrNot();
+    const init = async () => {
+      await checkLoggedInOrNot();
+    };
+    init();
   }, []);
 
   React.useEffect(() => {
@@ -308,5 +323,6 @@ export const useSpotify = () => {
     start,
     playListInfo,
     isPlaying,
+    logout,
   };
 };

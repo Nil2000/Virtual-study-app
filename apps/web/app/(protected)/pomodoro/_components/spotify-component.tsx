@@ -19,6 +19,7 @@ interface SpotifyComponentProps {
   generateSpotifyAuthURL: () => string;
   playListInfo: any;
   isPlaying: boolean;
+  logout: () => void;
 }
 
 export default function SpotifyComponent({
@@ -28,6 +29,7 @@ export default function SpotifyComponent({
   generateSpotifyAuthURL,
   playListInfo,
   isPlaying,
+  logout,
 }: SpotifyComponentProps) {
   return (
     <div className="relative w-full h-full">
@@ -60,6 +62,10 @@ export default function SpotifyComponent({
               changePlayList={changePlaylist}
               disabled={isPlaying}
             />
+            <Button variant={"ghost"} onClick={logout}>
+              <FaSpotify />
+              Disconnect
+            </Button>
           </div>
         </CardDescription>
         <CardFooter />

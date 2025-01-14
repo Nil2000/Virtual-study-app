@@ -12,8 +12,10 @@ import {
   TableRow,
 } from "@repo/ui/components/table";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
 
 export default function PomodoroPage() {
+  const [isMounted, setIsMounted] = React.useState(false);
   const {
     isLoggedIn,
     currentPlaying,
@@ -28,28 +30,40 @@ export default function PomodoroPage() {
     start,
     playListInfo,
     isPlaying,
+    logout,
   } = useSpotify();
   const confettiRef = React.useRef<ConfettiRef>(null);
   const [completedPomodoros, setCompletedPomodoros] = React.useState([]);
 
-  const getCompletedPomodoros = async () => {
-    try {
-      const response = await axios.get("/api/pomodoro");
-      if (response.data.length > 0) {
-        setCompletedPomodoros(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const getCompletedPomodoros = async () => {
+  //   try {
+  //     const response = await axios.get("/api/pomodoro");
+  //     if (response.data.length > 0) {
+  //       setCompletedPomodoros(response.data);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  // React.useEffect(() => {
+  //   getCompletedPomodoros();
+  // }, []);
 
   React.useEffect(() => {
-    getCompletedPomodoros();
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+    };
   }, []);
+
+  if (!isMounted) {
+    return <Loader2 className="mx-auto mt-20 animate-spin" />;
+  }
 
   return (
     <div className="relative">
-      <div className="font-sans grid md:grid-cols-2 md:grid-rows-1 grid-cols-1 w-full xl:w-[1000px] gap-4 px-3 mx-auto">
+      <div className="font-sans grid md:grid-cols-2 md:grid-rows-1 grid-cols-1 w-full lg:w-[1000px] gap-4 px-3 mx-auto">
         <PomodoroSec
           changeVolume={changeVolume}
           muted={muted}
@@ -67,6 +81,7 @@ export default function PomodoroPage() {
           generateSpotifyAuthURL={generateSpotifyAuthURL}
           playListInfo={playListInfo}
           isPlaying={isPlaying}
+          logout={logout}
         />
       </div>
       <div className="mx-auto w-full xl:w-[1000px] px-2 font-sans mt-4">
