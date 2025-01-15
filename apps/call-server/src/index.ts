@@ -133,6 +133,10 @@ connections.on("connection", (socket) => {
     await userManager.resumeProducer(data.roomId, data.producerId);
   });
 
+  socket.on("close-producer", async (data) => {
+    await userManager.closeProducer(data.roomId, data.producerId, socket.id);
+  });
+
   socket.on("disconnect", () => {
     userManager.removePeer(socket.id);
     chatManager.handleDisconnect(socket.id);

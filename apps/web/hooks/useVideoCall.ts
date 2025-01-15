@@ -38,13 +38,16 @@ export const useVideoCall = ({
   const consumingTransportRef = useRef<string[]>([]);
   const consumerTransportRef = useRef<Transport | null>(null);
   const deviceRef = useRef<Device | null>();
+  const audioProducerRef = useRef<Producer | null>(null);
+  const videoProducerRef = useRef<Producer | null>(null);
+  const producerTransportRef = useRef<Transport | null>(null);
   const [videoNode, setVideoNode] = useState<string[]>([]);
   const [isChatLoading, setIsChatLoading] = useState<boolean>(true);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [roomUserId, setRoomUserId] = useState<string | null>(null);
   const [isMessgeSent, setIsMessageSent] = useState<boolean>(false);
-  const audioProducerRef = useRef<Producer | null>(null);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState<boolean>(true);
 
   const getLocalStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -131,6 +134,7 @@ export const useVideoCall = ({
         }
 
         const producerTransport = device.createSendTransport(params);
+        producerTransportRef.current = producerTransport;
 
         producerTransport.on(
           "connect",
@@ -223,6 +227,7 @@ export const useVideoCall = ({
       console.log("video track ended");
     });
     audioProducerRef.current = audioProducer;
+    videoProducerRef.current = videoProducer;
   };
 
   const getProducers = (socket: Socket) => {
@@ -436,6 +441,90 @@ export const useVideoCall = ({
     }
   };
 
+  const toggleVideo = () => {
+    if (isVideoEnabled) {
+      disableCam();
+      setIsVideoEnabled(false);
+    } else {
+      enableCam();
+      setIsVideoEnabled(true);
+    }
+  };
+
+  const enableCam = async () => {
+    if (videoProducerRef.current) return;
+
+    if (!deviceRef.current?.canProduce("video")) {
+      console.error("Cannot produce video");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        height: 720,
+        width: 1280,
+      },
+    });
+
+    localVideoTrackRef.current = stream.getVideoTracks()[0]!;
+
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = new MediaStream(
+        stream.getVideoTracks()
+      );
+    }
+
+    if (!producerTransportRef.current) {
+      console.error("Producer transport not available");
+      return;
+    }
+
+    videoProducerRef.current = await producerTransportRef.current.produce({
+      track: localVideoTrackRef.current,
+      encodings: [
+        {
+          rid: "r0",
+          maxBitrate: 100000,
+          scalabilityMode: "S1T3",
+        },
+        {
+          rid: "r1",
+          maxBitrate: 300000,
+          scalabilityMode: "S1T3",
+        },
+        {
+          rid: "r2",
+          maxBitrate: 900000,
+          scalabilityMode: "S1T3",
+        },
+      ],
+      codecOptions: {
+        videoGoogleStartBitrate: 1000,
+      },
+    });
+
+    videoProducerRef.current.on("transportclose", () => {
+      console.log("Video transport close");
+      videoProducerRef.current = null;
+    });
+
+    videoProducerRef.current.on("trackended", () => {
+      console.log("Video track ended");
+    });
+  };
+
+  const disableCam = () => {
+    if (!videoProducerRef.current) return;
+
+    videoProducerRef.current.close();
+
+    socketRef.current?.emit("close-producer", {
+      roomId,
+      producerId: videoProducerRef.current.id,
+    });
+    videoProducerRef.current = null;
+  };
+
   useEffect(() => {
     const newSocket = io(serverUrl);
 
@@ -501,5 +590,7 @@ export const useVideoCall = ({
     isMessgeSent,
     isAudioMuted,
     toggleAudio,
+    isVideoEnabled,
+    toggleVideo,
   };
 };

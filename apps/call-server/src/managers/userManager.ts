@@ -334,4 +334,17 @@ export class UserManager {
     }
     await producer.resume();
   }
+
+  async closeProducer(roomId: string, producerId: string, socketId: string) {
+    const producer = this.roomManager.getProducer(roomId, producerId);
+    if (!producer) {
+      console.error("Producer not found");
+      return;
+    }
+    producer.close();
+
+    this.peers.get(socketId)?.producers.delete(producerId);
+
+    this.roomManager.removeProducer(producerId, roomId, socketId);
+  }
 }
